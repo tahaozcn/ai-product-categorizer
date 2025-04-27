@@ -1,16 +1,16 @@
 # AI Product Categorizer
 
-AI Product Categorizer, ürün fotoğraflarını yapay zeka kullanarak otomatik olarak kategorilendiren bir web uygulamasıdır.
+AI Product Categorizer is a web application that automatically categorizes product photos using artificial intelligence.
 
-## Özellikler
+## Features
 
-- Ürün fotoğrafı yükleme ve önizleme
-- Yapay zeka ile otomatik kategori tahmini
-- Mobil ve masaüstü görünüm desteği
-- Gerçek zamanlı kategori seçimi ve onaylama
-- Ürün silme ve düzenleme özellikleri
+- Product photo upload and preview
+- AI-powered automatic category prediction
+- Mobile and desktop view support
+- Real-time category selection and approval
+- Product deletion and editing features
 
-## Teknolojiler
+## Technologies
 
 ### Backend
 - Python 3.x
@@ -23,9 +23,9 @@ AI Product Categorizer, ürün fotoğraflarını yapay zeka kullanarak otomatik 
 - Chakra UI
 - Axios
 
-## Kurulum
+## Installation
 
-### Backend Kurulumu
+### Backend Setup
 
 ```bash
 cd backend
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### Frontend Kurulumu
+### Frontend Setup
 
 ```bash
 cd frontend
@@ -43,18 +43,18 @@ npm install
 npm start
 ```
 
-## Kullanım
+## Usage
 
-1. Frontend uygulaması varsayılan olarak http://localhost:4001 adresinde çalışır
-2. Backend API http://localhost:8000 adresinde çalışır
-3. Ürün fotoğrafı yüklemek için "Fotoğraf Yükle" butonunu kullanın
-4. Yapay zeka modeli fotoğrafı analiz edip kategori önerileri sunacaktır
-5. İstediğiniz kategoriyi seçip onaylayabilirsiniz
+1. Frontend application runs on http://localhost:4001 by default
+2. Backend API runs on http://localhost:8000
+3. Use the "Upload Photo" button to upload product photos
+4. The AI model will analyze the photo and provide category suggestions
+5. You can select and approve your desired category
 
-## Lisans
+## License
 
 MIT
 
-## İletişim
+## Contact
 
-GitHub: [Kullanıcı Adınız] 
+GitHub: [SelSefa](https://github.com/SelSefa) 
