@@ -1,220 +1,93 @@
-import React, { useState, useCallback } from 'react';
-import {
-  Box,
-  Image,
-  Text,
-  IconButton,
-  useToast,
-  Badge,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Button,
-  VStack,
-  SimpleGrid,
-  Tag,
-  TagLabel,
-  TagRightIcon,
-  Tooltip,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-} from '@chakra-ui/react';
-import { CloseIcon, InfoIcon } from '@chakra-ui/icons';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8000/api';
+import React from 'react';
+import { Box, Card, CardBody, Stack, Heading, Button, useToast, IconButton } from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
 
 const Product = ({ product, onDelete, isMobileView }) => {
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const toast = useToast();
-  const cancelRef = React.useRef();
 
-  const handleDelete = useCallback(async () => {
-    if (isDeleting) return;
-    
-    setIsDeleting(true);
+  const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/products/${product.id}`);
-      
-      // First update UI
-      onDelete(product.id);
-      setIsDeleteModalOpen(false);
-      
-      // Then show success message
-      toast({
-        title: "Success",
-        description: "Product successfully deleted",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
+      const response = await fetch(`http://localhost:8000/api/products/${product.id}`, {
+        method: 'DELETE',
       });
+
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Product deleted successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        onDelete();
+      } else {
+        throw new Error('Failed to delete product');
+      }
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
-        title: "Error",
-        description: "An error occurred while deleting the product",
-        status: "error",
-        duration: 5000,
+        title: 'Error',
+        description: 'Failed to delete product',
+        status: 'error',
+        duration: 3000,
         isClosable: true,
       });
-    } finally {
-      setIsDeleting(false);
     }
-  }, [product.id, isDeleting, onDelete, toast]);
-
-  const handleDeleteClick = useCallback(() => {
-    if (!isDeleting) {
-      setIsDeleteModalOpen(true);
-    }
-  }, [isDeleting]);
-
-  const handleCloseModal = useCallback(() => {
-    if (!isDeleting) {
-      setIsDeleteModalOpen(false);
-    }
-  }, [isDeleting]);
-
-  // Find the category with highest confidence
-  const highestConfidenceCategory = product.categories.reduce((prev, current) => 
-    (prev.confidence > current.confidence) ? prev : current
-  );
-
-  // Extract the most specific category name
-  const categoryParts = highestConfidenceCategory.name.split(' - ');
-  const specificCategory = categoryParts[categoryParts.length - 1];
-  const confidence = highestConfidenceCategory.confidence;
+  };
 
   return (
-    <>
+    <Card
+      direction={{ base: 'column', sm: 'row' }}
+      overflow='hidden'
+      variant='outline'
+      p={4}
+      mb={4}
+      bg="white"
+      borderRadius="lg"
+      boxShadow="md"
+    >
       <Box
-        borderWidth="1px"
-        borderRadius="lg"
-        overflow="hidden"
-        bg="white"
+        flexShrink={0}
+        w={isMobileView ? "100%" : "200px"}
+        h={isMobileView ? "200px" : "150px"}
+        mb={isMobileView ? 4 : 0}
+        mr={isMobileView ? 0 : 4}
         position="relative"
-        transition="transform 0.2s"
-        _hover={{ transform: 'translateY(-4px)' }}
-        boxShadow="sm"
-        height="100%"
-        display="flex"
-        flexDirection="column"
-        opacity={isDeleting ? 0.5 : 1}
-        pointerEvents={isDeleting ? "none" : "auto"}
       >
-        <IconButton
-          icon={<CloseIcon />}
-          position="absolute"
-          right="2"
-          top="2"
-          zIndex="1"
-          colorScheme="red"
-          size="sm"
-          onClick={handleDeleteClick}
-          aria-label="Delete product"
-          isDisabled={isDeleting}
+        <img
+          src={`http://localhost:8000/uploads/${product.image_path}`}
+          alt={product.category}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '8px',
+          }}
         />
-        
-        <Box 
-          position="relative" 
-          width="100%" 
-          height="200px"
-          overflow="hidden"
-        >
-          <Image
-            src={`http://localhost:8000${product.image_url}`}
-            alt="Product"
-            objectFit="contain"
-            width="100%"
-            height="100%"
-            backgroundColor="gray.100"
-          />
-        </Box>
-        
-        <VStack 
-          p={4} 
-          align="stretch" 
-          spacing={2}
-          flex="1"
-          backgroundColor="white"
-        >
-          <Tooltip 
-            label={`Full category: ${highestConfidenceCategory.name}`}
-            placement="top"
-            hasArrow
-          >
-            <Tag
-              size={isMobileView ? "sm" : "md"}
-              variant="subtle"
-              colorScheme={
-                confidence > 0.7 ? "green" :
-                confidence > 0.5 ? "yellow" : "red"
-              }
-              width="100%"
-              justifyContent="center"
-              py={1.5}
-              px={3}
-              borderRadius="md"
-              boxShadow="sm"
-            >
-              <TagLabel 
-                fontSize={isMobileView ? "xs" : "sm"}
-                fontWeight="medium"
-                textAlign="center"
-              >
-                {specificCategory}
-              </TagLabel>
-            </Tag>
-          </Tooltip>
-        </VStack>
+        <IconButton
+          icon={<DeleteIcon />}
+          onClick={handleDelete}
+          position="absolute"
+          top={2}
+          right={2}
+          size="sm"
+          colorScheme="red"
+          bg="red.100"
+          _hover={{ bg: "red.200" }}
+          borderRadius="full"
+          p={2}
+        />
       </Box>
 
-      <AlertDialog
-        isOpen={isDeleteModalOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={handleCloseModal}
-        isCentered
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete Product
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to delete this product?
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button 
-                ref={cancelRef} 
-                onClick={handleCloseModal}
-                isDisabled={isDeleting}
-              >
-                Cancel
-              </Button>
-              <Button 
-                colorScheme="red" 
-                onClick={handleDelete} 
-                ml={3}
-                isLoading={isDeleting}
-                loadingText="Deleting..."
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
-    </>
+      <Stack flex="1">
+        <CardBody>
+          <Heading size={isMobileView ? "md" : "lg"} mb={2}>
+            {product.category}
+          </Heading>
+        </CardBody>
+      </Stack>
+    </Card>
   );
 };
 
-export default React.memo(Product);
+export default Product;
