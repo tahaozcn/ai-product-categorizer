@@ -42,6 +42,7 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
   const toast = useToast();
   const fileInputRef = useRef(null);
   const { colorMode, toggleColorMode } = useColorMode();
+  const [categoryErrorModal, setCategoryErrorModal] = useState(false);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -173,14 +174,19 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
       setAnalysisResult(response.data);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: 'Error',
-        description: 'An error occurred while uploading the file',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
+      // Kategori bulunamadı hatası için özel modal
+      if (error.response && error.response.data && error.response.data.error === 'No category found for this product.') {
+        setCategoryErrorModal(true);
+      } else {
+        console.error('Error uploading file:', error);
+        toast({
+          title: 'Error',
+          description: 'An error occurred while uploading the file',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -437,7 +443,7 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
           overflowY="auto"
         >
           <ModalHeader fontSize={isMobileView ? "md" : "lg"}>Select Product Category</ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton onClick={handleCancel} />
           <ModalBody>
             {analysisResult && (
               <VStack spacing={4} align="stretch">
@@ -450,71 +456,77 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
                   borderRadius="md"
                   boxShadow="md"
                 />
-                <Box>
-                  <Text fontWeight="bold" mb={2} fontSize={isMobileView ? "sm" : "md"}>
-                    Choose the correct category:
-                  </Text>
-                  <RadioGroup 
-                    onChange={(value) => setSelectedCategory(analysisResult.categories[parseInt(value)])} 
-                    value={selectedCategory ? analysisResult.categories.findIndex(cat => cat === selectedCategory).toString() : undefined}
-                  >
-                    <Stack spacing={3}>
-                      {[...analysisResult.categories]
-                        .sort((a, b) => b.confidence - a.confidence)
-                        .map((category, index) => (
-                          <Box 
-                            key={index}
-                            as="label"
-                            p={3}
-                            bg={
-                              selectedCategory === category ? "blue.50" :
-                              category.confidence > 0.7 ? "green.50" :
-                              category.confidence > 0.5 ? "yellow.50" : "red.50"
-                            }
-                            borderRadius="md"
-                            borderWidth="1px"
-                            borderColor={
-                              selectedCategory === category ? "blue.200" :
-                              category.confidence > 0.7 ? "green.200" :
-                              category.confidence > 0.5 ? "yellow.200" : "red.200"
-                            }
-                            boxShadow="sm"
-                            cursor="pointer"
-                            _hover={{
-                              transform: "translateY(-2px)",
-                              boxShadow: "md",
-                            }}
-                            transition="all 0.2s"
-                          >
-                            <Radio 
-                              value={index.toString()}
-                              mb={2}
-                              isChecked={selectedCategory === category}
-                            >
-                              <Text 
-                                color="gray.800" 
-                                fontWeight="medium"
-                                fontSize={isMobileView ? "sm" : "md"}
-                                ml={2}
-                              >
-                                {category.name}
-                              </Text>
-                            </Radio>
-                            <Text 
-                              fontSize={isMobileView ? "xs" : "sm"} 
-                              color={
-                                category.confidence > 0.7 ? "green.600" :
-                                category.confidence > 0.5 ? "yellow.600" : "red.600"
+                {(!analysisResult.categories || analysisResult.categories.length === 0) ? (
+                  <Box p={2} bg="red.50" borderRadius="md" color="red.500" textAlign="center">
+                    No category found for this product.
+                  </Box>
+                ) : (
+                  <Box>
+                    <Text fontWeight="bold" mb={2} fontSize={isMobileView ? "sm" : "md"}>
+                      Choose the correct category:
+                    </Text>
+                    <RadioGroup 
+                      onChange={(value) => setSelectedCategory(analysisResult.categories[parseInt(value)])} 
+                      value={selectedCategory ? analysisResult.categories.findIndex(cat => cat === selectedCategory).toString() : undefined}
+                    >
+                      <Stack spacing={3}>
+                        {[...analysisResult.categories]
+                          .sort((a, b) => b.confidence - a.confidence)
+                          .map((category, index) => (
+                            <Box 
+                              key={index}
+                              as="label"
+                              p={3}
+                              bg={
+                                selectedCategory === category ? "blue.50" :
+                                category.confidence > 0.7 ? "green.50" :
+                                category.confidence > 0.5 ? "yellow.50" : "red.50"
                               }
-                              ml={6}
+                              borderRadius="md"
+                              borderWidth="1px"
+                              borderColor={
+                                selectedCategory === category ? "blue.200" :
+                                category.confidence > 0.7 ? "green.200" :
+                                category.confidence > 0.5 ? "yellow.200" : "red.200"
+                              }
+                              boxShadow="sm"
+                              cursor="pointer"
+                              _hover={{
+                                transform: "translateY(-2px)",
+                                boxShadow: "md",
+                              }}
+                              transition="all 0.2s"
                             >
-                              Confidence Score: {(category.confidence * 100).toFixed(1)}%
-                            </Text>
-                          </Box>
-                      ))}
-                    </Stack>
-                  </RadioGroup>
-                </Box>
+                              <Radio 
+                                value={index.toString()}
+                                mb={2}
+                                isChecked={selectedCategory === category}
+                              >
+                                <Text 
+                                  color="gray.800" 
+                                  fontWeight="medium"
+                                  fontSize={isMobileView ? "sm" : "md"}
+                                  ml={2}
+                                >
+                                  {category.name}
+                                </Text>
+                              </Radio>
+                              <Text 
+                                fontSize={isMobileView ? "xs" : "sm"} 
+                                color={
+                                  category.confidence > 0.7 ? "green.600" :
+                                  category.confidence > 0.5 ? "yellow.600" : "red.600"
+                                }
+                                ml={6}
+                              >
+                                Confidence Score: {(category.confidence * 100).toFixed(1)}%
+                              </Text>
+                            </Box>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </Box>
+                )}
               </VStack>
             )}
           </ModalBody>
@@ -535,9 +547,32 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
               size={isMobileView ? "sm" : "md"}
               _hover={{ transform: "translateY(-1px)" }}
               transition="all 0.2s"
-              isDisabled={!selectedCategory}
+              isDisabled={!selectedCategory || !analysisResult.categories || analysisResult.categories.length === 0}
             >
               Confirm Selected Category
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal 
+        isOpen={categoryErrorModal}
+        onClose={() => setCategoryErrorModal(false)}
+        size={isMobileView ? "sm" : "md"}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize={isMobileView ? "md" : "lg"}>Category Not Found</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Box p={2} bg="red.50" borderRadius="md" color="red.500" textAlign="center">
+              No category found for this product. Please try another photo.
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" onClick={() => setCategoryErrorModal(false)}>
+              Close
             </Button>
           </ModalFooter>
         </ModalContent>

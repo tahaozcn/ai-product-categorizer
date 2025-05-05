@@ -82,15 +82,51 @@ const Product = ({ product, onDelete, isMobileView }) => {
     }
   }, [isDeleting]);
 
-  // Find the category with highest confidence
-  const highestConfidenceCategory = product.categories.reduce((prev, current) => 
-    (prev.confidence > current.confidence) ? prev : current
-  );
-
-  // Extract the most specific category name
-  const categoryParts = highestConfidenceCategory.name.split(' - ');
-  const specificCategory = categoryParts[categoryParts.length - 1];
-  const confidence = highestConfidenceCategory.confidence;
+  let categoryContent;
+  if (!product.categories || product.categories.length === 0) {
+    categoryContent = (
+      <Box p={2} bg="red.50" borderRadius="md" color="red.500" textAlign="center">
+        No category found for this product.
+      </Box>
+    );
+  } else {
+    const highestConfidenceCategory = product.categories.reduce((prev, current) => 
+      (prev.confidence > current.confidence) ? prev : current
+    );
+    const categoryParts = highestConfidenceCategory.name.split(' - ');
+    const specificCategory = categoryParts[categoryParts.length - 1];
+    const confidence = highestConfidenceCategory.confidence;
+    categoryContent = (
+      <Tooltip 
+        label={`Full category: ${highestConfidenceCategory.name}`}
+        placement="top"
+        hasArrow
+      >
+        <Tag
+          size={isMobileView ? "sm" : "md"}
+          variant="subtle"
+          colorScheme={
+            confidence > 0.7 ? "green" :
+            confidence > 0.5 ? "yellow" : "red"
+          }
+          width="100%"
+          justifyContent="center"
+          py={1.5}
+          px={3}
+          borderRadius="md"
+          boxShadow="sm"
+        >
+          <TagLabel 
+            fontSize={isMobileView ? "xs" : "sm"}
+            fontWeight="medium"
+            textAlign="center"
+          >
+            {specificCategory}
+          </TagLabel>
+        </Tag>
+      </Tooltip>
+    );
+  }
 
   return (
     <>
@@ -145,34 +181,7 @@ const Product = ({ product, onDelete, isMobileView }) => {
           flex="1"
           backgroundColor="white"
         >
-          <Tooltip 
-            label={`Full category: ${highestConfidenceCategory.name}`}
-            placement="top"
-            hasArrow
-          >
-            <Tag
-              size={isMobileView ? "sm" : "md"}
-              variant="subtle"
-              colorScheme={
-                confidence > 0.7 ? "green" :
-                confidence > 0.5 ? "yellow" : "red"
-              }
-              width="100%"
-              justifyContent="center"
-              py={1.5}
-              px={3}
-              borderRadius="md"
-              boxShadow="sm"
-            >
-              <TagLabel 
-                fontSize={isMobileView ? "xs" : "sm"}
-                fontWeight="medium"
-                textAlign="center"
-              >
-                {specificCategory}
-              </TagLabel>
-            </Tag>
-          </Tooltip>
+          {categoryContent}
         </VStack>
       </Box>
 

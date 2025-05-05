@@ -102,8 +102,8 @@ function App() {
               <Box w={isMobileView ? "100%" : "70%"}>
                 <FileUpload onUploadSuccess={(data) => {
                   if (Array.isArray(data)) {
-                    setProducts(data);
-                  } else {
+                    setProducts(data.filter(product => product.categories && product.categories.length > 0));
+                  } else if (data.categories && data.categories.length > 0) {
                     setProducts(prev => [...prev, data]);
                   }
                 }} isMobileView={isMobileView} />

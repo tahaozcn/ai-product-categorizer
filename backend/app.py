@@ -385,6 +385,10 @@ def upload_file():
         if not results:
             return jsonify({'error': 'Failed to analyze image'}), 500
         
+        # Eğer kategoriler boşsa kaydetme
+        if not results['categories'] or len(results['categories']) == 0:
+            return jsonify({'error': 'No category found for this product.'}), 400
+        
         # Save product to database
         product_id = timestamp
         product_data = {
