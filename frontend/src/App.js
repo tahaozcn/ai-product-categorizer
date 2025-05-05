@@ -4,15 +4,6 @@ import {
   Box,
   VStack,
   Heading,
-  Text,
-  Image,
-  Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Container,
   SimpleGrid,
   useToast,
@@ -24,6 +15,7 @@ import {
   AlertDialogOverlay,
   ColorModeProvider,
   IconButton,
+  Button,
 } from '@chakra-ui/react';
 import { FaMobile, FaDesktop } from 'react-icons/fa';
 import FileUpload from './components/FileUpload';
@@ -33,20 +25,13 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000/api';
 
 function App() {
-  const [selectedFile, setSelectedFile] = useState(null);
   const [products, setProducts] = useState([]);
-  const [currentProduct, setCurrentProduct] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [deleteAlert, setDeleteAlert] = useState({ isOpen: false, productId: null });
   const [isMobileView, setIsMobileView] = useState(false);
   const cancelRef = React.useRef();
   const toast = useToast();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/products`);
       setProducts(response.data);
@@ -60,7 +45,11 @@ function App() {
         isClosable: true,
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleDelete = useCallback((productId) => {
     setProducts(prevProducts => prevProducts.filter(product => product.id !== productId));

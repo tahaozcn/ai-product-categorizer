@@ -2,22 +2,10 @@ import React, { useState, useCallback } from 'react';
 import {
   Box,
   Image,
-  Text,
   IconButton,
   useToast,
-  Badge,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Button,
-  VStack,
-  SimpleGrid,
   Tag,
   TagLabel,
-  TagRightIcon,
   Tooltip,
   AlertDialog,
   AlertDialogOverlay,
@@ -25,8 +13,10 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  Button,
+  VStack
 } from '@chakra-ui/react';
-import { CloseIcon, InfoIcon } from '@chakra-ui/icons';
+import { CloseIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8000/api';
