@@ -5,17 +5,7 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import torch
 from transformers import CLIPProcessor, CLIPModel
-import requests
-from io import BytesIO
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import concurrent.futures
-from sklearn.cluster import KMeans
-import json
-import cv2
-import webcolors
 import sqlite3
-from transformers import pipeline
 import clip
 import time
 
