@@ -373,10 +373,15 @@ def upload_file():
         # Analyze the image
         results = analyze_image(filepath)
         if not results:
+            # Fotoğrafı sil
+            if os.path.exists(filepath):
+                os.remove(filepath)
             return jsonify({'error': 'Failed to analyze image'}), 500
         
-        # Eğer kategoriler boşsa kaydetme
+        # Eğer kategoriler boşsa kaydetme ve fotoğrafı sil
         if not results['categories'] or len(results['categories']) == 0:
+            if os.path.exists(filepath):
+                os.remove(filepath)
             return jsonify({'error': 'No category found for this product.'}), 400
         
         # Save product to database
