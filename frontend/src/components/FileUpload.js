@@ -396,16 +396,31 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
                     </Text>
                   )}
                   {previewUrl && (
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      mt={4}
-                      maxH={isMobileView ? "150px" : "200px"}
-                      mx="auto"
-                      objectFit="contain"
-                      borderRadius="md"
-                      boxShadow="md"
-                    />
+                    <Box position="relative" display="inline-block" mt={4}>
+                      <Image
+                        src={previewUrl}
+                        alt="Preview"
+                        maxH={isMobileView ? "200px" : "300px"}
+                        mx="auto"
+                        objectFit="contain"
+                        borderRadius="md"
+                        boxShadow="md"
+                      />
+                      <IconButton
+                        icon={<CloseIcon />}
+                        size="sm"
+                        colorScheme="red"
+                        position="absolute"
+                        top={2}
+                        right={2}
+                        aria-label="Remove photo"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setPreviewUrl(null);
+                          setAnalysisResult(null);
+                        }}
+                      />
+                    </Box>
                   )}
                 </>
               )}
