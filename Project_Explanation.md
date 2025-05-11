@@ -22,6 +22,10 @@ Password: user2user2
 E-mail: user3@user3.com  
 Password: user3user3
 
+**User 4:**  
+E-mail: user4@user.4com  
+Password: user4user4
+
 ---
 
 ## 1. Project Purpose & Vision

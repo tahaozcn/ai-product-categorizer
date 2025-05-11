@@ -11,11 +11,13 @@ import {
   InputGroup,
   InputRightElement,
   IconButton,
-  useToast
+  useToast,
+  Text,
+  Link
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('');
@@ -141,6 +143,12 @@ const RegisterForm = () => {
           >
             Register
           </Button>
+          <Text fontSize="sm">
+            Already have an account?{' '}
+            <Link as={RouterLink} to="/login" color="green.500">
+              Login
+            </Link>
+          </Text>
         </VStack>
       </form>
     </Box>
