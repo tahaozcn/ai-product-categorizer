@@ -1,27 +1,27 @@
-# Test 1.1: Kategorisiz Ürün Fotoğraflarının Otomatik Temizliği
+# Test 1.1: Automatic Cleanup of Unclassified Product Photos
 
-Bu doküman, Test 1 kapsamındaki ana temizlik ve test sürecine ek olarak yapılan son güncellemeyi özetler.
-
----
-
-## Sorunun Tespiti
-- Kod ve dosya yapısı incelenirken, `backend/uploads` klasöründe kategorisi bulunamayan ve listelenemeyen ürünlerin fotoğraflarının biriktiği manuel olarak tespit edildi.
-- Bu fotoğraflar, frontend ve backend API'de görünmüyor ancak dosya sisteminde gereksiz yer kaplıyordu.
+This document summarizes the latest update made in addition to the main cleanup and test process described in Test 1.
 
 ---
 
-## Yapılan Güncelleme
-- Backend'de, ürün yükleme sırasında kategorisi bulunamayan ürünlerin fotoğrafı analizden hemen sonra otomatik olarak silinecek şekilde kod güncellendi.
-- Artık sadece kategorisi bulunan ve veritabanına kaydedilen ürünlerin fotoğrafları uploads klasöründe tutuluyor.
-- Kategorisi bulunamayan ürünler için hem kullanıcıya hata mesajı dönülüyor hem de gereksiz dosya birikimi önleniyor.
+## Problem Identification
+- During code and file structure review, it was manually detected that photos of products without a category and not listed were accumulating in the `backend/uploads` folder.
+- These photos were not visible in the frontend or backend API but were unnecessarily occupying disk space.
 
 ---
 
-## Test ve Sonuç
-- Eski gereksiz fotoğraflar manuel olarak silindi.
-- Yeni sistemde, kategorisi bulunamayan ürünlerin fotoğrafları otomatik olarak siliniyor ve backend klasöründe yer kaplamıyor.
-- Testler başarıyla geçti, sistemin bu kısmı tamamen temiz ve sürdürülebilir hale geldi.
+## Update Implemented
+- In the backend, the code was updated so that photos of products without a category are automatically deleted immediately after analysis during upload.
+- Now, only photos of products that have a category and are saved to the database remain in the uploads folder.
+- For products without a category, both an error message is returned to the user and unnecessary file accumulation is prevented.
 
 ---
 
-**Bu dosya, Test 1 ana raporunun alt dokümantasyonu olarak referans alınabilir.** 
+## Test and Result
+- Old unnecessary photos were manually deleted.
+- In the new system, photos of products without a category are automatically deleted and do not occupy space in the backend folder.
+- Tests were successful, and this part of the system is now completely clean and sustainable.
+
+---
+
+**This file can be referenced as a sub-documentation of the main Test 1 report.** 

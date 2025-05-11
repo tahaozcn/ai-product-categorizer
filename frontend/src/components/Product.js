@@ -80,12 +80,12 @@ const Product = ({ product, onDelete, isMobileView }) => {
       </Box>
     );
   } else {
-    const highestConfidenceCategory = product.categories.reduce((prev, current) => 
-      (prev.confidence > current.confidence) ? prev : current
-    );
-    const categoryParts = highestConfidenceCategory.name.split(' - ');
-    const specificCategory = categoryParts[categoryParts.length - 1];
-    const confidence = highestConfidenceCategory.confidence;
+  const highestConfidenceCategory = product.categories.reduce((prev, current) => 
+    (prev.confidence > current.confidence) ? prev : current
+  );
+  const categoryParts = highestConfidenceCategory.name.split(' - ');
+  const specificCategory = categoryParts[categoryParts.length - 1];
+  const confidence = highestConfidenceCategory.confidence;
     categoryContent = (
       <Tooltip 
         label={`Full category: ${highestConfidenceCategory.name}`}
@@ -134,6 +134,8 @@ const Product = ({ product, onDelete, isMobileView }) => {
         flexDirection="column"
         opacity={isDeleting ? 0.5 : 1}
         pointerEvents={isDeleting ? "none" : "auto"}
+        width="360px"
+        margin="0 auto"
       >
         <IconButton
           icon={<CloseIcon />}
@@ -150,8 +152,12 @@ const Product = ({ product, onDelete, isMobileView }) => {
         
         <Box 
           position="relative" 
-          width="100%" 
-          height="200px"
+          width="240px" 
+          height="240px"
+          margin="0 auto"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
           overflow="hidden"
         >
           <Image

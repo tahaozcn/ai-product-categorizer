@@ -1,155 +1,151 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
   ChakraProvider,
+  CSSReset,
   Box,
-  VStack,
-  Heading,
-  Container,
-  SimpleGrid,
-  useToast,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  ColorModeProvider,
-  IconButton,
+  Flex,
+  Spacer,
   Button,
+  Link as ChakraLink
 } from '@chakra-ui/react';
-import { FaMobile, FaDesktop } from 'react-icons/fa';
-import FileUpload from './components/FileUpload';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
+import ProductUpload from './components/ProductUpload';
 import ProductList from './components/ProductList';
-import axios from 'axios';
+import ProfilePage from './components/ProfilePage';
+import AdminPanel from './components/AdminPanel';
+import { FaMobile, FaDesktop } from 'react-icons/fa';
 
-const API_URL = 'http://localhost:8000/api';
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!isAuthenticated()) return <Navigate to="/login" />;
+  return children;
+};
+
+// Admin Route component
+const AdminRoute = ({ children }) => {
+  const { isAdmin, loading, isAuthenticated } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!isAuthenticated() || !isAdmin()) return <Navigate to="/" />;
+  return children;
+};
+
+// Role-based Navigation Bar
+const NavBar = () => {
+  const { isAuthenticated, user, logout, isAdmin } = useAuth();
+  const location = useLocation();
+  if (!isAuthenticated()) return null;
+  const isActive = (path) => location.pathname === path;
+  return (
+    <Flex as="nav" bg="gray.100" p={4} mb={8} align="center">
+      {/* User navigation */}
+      {!isAdmin() && (
+        <>
+          <ChakraLink as={RouterLink} to="/" fontWeight="bold" fontSize="lg" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
+            borderBottom={isActive('/') ? '3px solid #38A169' : 'none'} color={isActive('/') ? 'green.700' : undefined}>
+            Upload Product
+          </ChakraLink>
+          <ChakraLink as={RouterLink} to="/products" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
+            borderBottom={isActive('/products') ? '3px solid #38A169' : 'none'} color={isActive('/products') ? 'green.700' : undefined}>
+            My Products
+          </ChakraLink>
+        </>
+      )}
+      {/* Admin navigation */}
+      {isAdmin() && (
+        <>
+          <ChakraLink as={RouterLink} to="/admin" fontWeight="bold" fontSize="lg" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
+            borderBottom={isActive('/admin') ? '3px solid #38A169' : 'none'} color={isActive('/admin') ? 'green.700' : undefined}>
+            User Management
+          </ChakraLink>
+        </>
+      )}
+      <ChakraLink as={RouterLink} to="/profile" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
+        borderBottom={isActive('/profile') ? '3px solid #38A169' : 'none'} color={isActive('/profile') ? 'green.700' : undefined}>
+        My Profile
+      </ChakraLink>
+      <Spacer />
+      <Box fontSize="sm" color="gray.600" mr={4}>{user?.email}</Box>
+      <Button colorScheme="green" size="sm" onClick={logout}>Logout</Button>
+    </Flex>
+  );
+};
+
+// Role-based Home Redirect
+const HomeRedirect = ({ isMobileView }) => {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!isAuthenticated()) return <Navigate to="/login" />;
+  if (isAdmin()) return <Navigate to="/admin" />; // Adminler admin paneline
+  return <ProductUpload isMobileView={isMobileView} />; // Userlar ürün yükleme sayfasına
+};
 
 function App() {
-  const [products, setProducts] = useState([]);
-  const [deleteAlert, setDeleteAlert] = useState({ isOpen: false, productId: null });
-  const [isMobileView, setIsMobileView] = useState(false);
-  const cancelRef = React.useRef();
-  const toast = useToast();
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      const response = await axios.get(`${API_URL}/products`);
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch products',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  const handleDelete = useCallback((productId) => {
-    setProducts(prevProducts => prevProducts.filter(product => product.id !== productId));
-  }, []);
-
+  const [isMobileView, setIsMobileView] = React.useState(false);
   return (
     <ChakraProvider>
-      <ColorModeProvider>
-        <Box minH="100vh" bg="gray.50" py={isMobileView ? 4 : 8}>
-          <Container 
-            maxW={isMobileView ? "100%" : "container.xl"} 
-            px={isMobileView ? 2 : 4}
-            centerContent
-          >
-            <VStack spacing={isMobileView ? 4 : 8} width="100%">
-              <Box position="fixed" top={4} right={4} zIndex="overlay">
-                <IconButton
-                  icon={isMobileView ? <FaDesktop /> : <FaMobile />}
-                  onClick={() => setIsMobileView(!isMobileView)}
-                  aria-label="Toggle view mode"
-                  variant="solid"
-                  colorScheme="blue"
-                  size={isMobileView ? "md" : "lg"}
-                  w={isMobileView ? "60px" : "72px"}
-                  h={isMobileView ? "60px" : "72px"}
-                  fontSize={isMobileView ? "30px" : "36px"}
-                />
+      <CSSReset />
+      <AuthProvider>
+        <Router>
+          <NavBar />
+          {/* Mobil/desktop geçiş ikonu sağ alt köşede sabit */}
+          <Box position="fixed" bottom={6} right={6} zIndex={1000}>
+            <Button
+              colorScheme="blue"
+              borderRadius="full"
+              boxShadow="lg"
+              size="lg"
+              onClick={() => setIsMobileView(v => !v)}
+              leftIcon={isMobileView ? <FaDesktop /> : <FaMobile />}
+              aria-label="Toggle mobile/desktop view"
+            >
+              {isMobileView ? 'Desktop' : 'Mobile'}
+            </Button>
               </Box>
-
-              <Heading 
-                size={isMobileView ? "lg" : "xl"} 
-                color="gray.700" 
-                textAlign="center"
-                mt={isMobileView ? 12 : 0}
-              >
-                AI Product Categorizer
-              </Heading>
-
-              <Box w={isMobileView ? "100%" : "70%"}>
-                <FileUpload onUploadSuccess={(data) => {
-                  if (Array.isArray(data)) {
-                    setProducts(data.filter(product => product.categories && product.categories.length > 0));
-                  } else if (data.categories && data.categories.length > 0) {
-                    setProducts(prev => [...prev, data]);
-                  }
-                }} isMobileView={isMobileView} />
-              </Box>
-
-              <Box w={isMobileView ? "100%" : "80%"} mt={isMobileView ? 4 : 8}>
-                <Heading 
-                  as="h2" 
-                  size={isMobileView ? "md" : "lg"} 
-                  mb={4} 
-                  textAlign="center"
-                >
-                  Product List
-                </Heading>
-                <SimpleGrid 
-                  columns={isMobileView ? 1 : 3} 
-                  spacing={isMobileView ? 4 : 6}
-                  width="100%"
-                >
-                  <ProductList 
-                    products={products} 
-                    onDelete={handleDelete}
-                    isMobileView={isMobileView}
-                  />
-                </SimpleGrid>
-              </Box>
-            </VStack>
-          </Container>
-
-          <AlertDialog
-            isOpen={deleteAlert.isOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={() => setDeleteAlert({ isOpen: false, productId: null })}
-          >
-            <AlertDialogOverlay>
-              <AlertDialogContent>
-                <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                  Delete Product
-                </AlertDialogHeader>
-
-                <AlertDialogBody>
-                  Are you sure you want to delete this product? This action cannot be undone.
-                </AlertDialogBody>
-
-                <AlertDialogFooter>
-                  <Button ref={cancelRef} onClick={() => setDeleteAlert({ isOpen: false, productId: null })}>
-                    Cancel
-                  </Button>
-                  <Button colorScheme="red" onClick={() => handleDelete(deleteAlert.productId)} ml={3}>
-                    Delete
-                  </Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialogOverlay>
-          </AlertDialog>
-        </Box>
-      </ColorModeProvider>
+          <Routes>
+            <Route path="/register" element={<RegisterForm />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <HomeRedirect isMobileView={isMobileView} />
+                </ProtectedRoute>
+              } 
+            />
+            {/* User routes */}
+            <Route 
+              path="/products" 
+              element={
+                <ProtectedRoute>
+                  <ProductList isMobileView={isMobileView} />
+                </ProtectedRoute>
+              } 
+            />
+            {/* Admin panel route */}
+            <Route 
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <AdminPanel isMobileView={isMobileView} />
+                </AdminRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <ProfilePage isMobileView={isMobileView} />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ChakraProvider>
   );
 }

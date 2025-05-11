@@ -1,69 +1,71 @@
 # AI Product Categorizer
 
-AI Product Categorizer is a web application that automatically categorizes product photos using artificial intelligence.
+A full-stack web application for AI-powered product image categorization, user management, and product listing. Built with React (Chakra UI) on the frontend and Flask (PyTorch, CLIP) on the backend.
+
+---
 
 ## Features
+- **User Authentication:** Register, login, logout, JWT-based session management
+- **Admin Panel:** View all users and their details (admin only)
+- **Profile Page:** View and update your profile information
+- **Product Upload:** Upload product images, analyze with AI, and categorize
+- **My Products:** List, view, and delete your own uploaded products
+- **Responsive UI:** Mobile and desktop friendly, modern Chakra UI design
+- **Security:** Only product owners can delete their products; JWT required for all critical endpoints
 
-- Product photo upload and preview
-- AI-powered automatic category prediction (OpenAI CLIP model)
-- Mobile and desktop view support
-- Real-time category selection and approval
-- Product deletion and editing features
+---
 
-## Technologies
-
-### Backend
-- Python 3.x
-- Flask
-- Flask-CORS
-- SQLite (built-in)
-- PyTorch (torch, torchvision)
-- transformers (HuggingFace)
-- OpenAI CLIP (clip)
-- Pillow
-
-### Frontend
-- React
-- Chakra UI
-- Axios
-- React Icons
-
-## Installation
+## Quick Start
 
 ### Backend Setup
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python3 app.py
-```
+1. `cd backend`
+2. `python3 -m venv venv && source venv/bin/activate`
+3. `pip install -r requirements.txt`
+4. `flask run --host=0.0.0.0 --port=8000`
 
 ### Frontend Setup
+1. `cd frontend`
+2. `npm install`
+3. `npm start`
 
-```bash
-cd frontend
-npm install
-npm start
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:8000](http://localhost:8000)
+
+---
+
+## Folder Structure
+```
+AIProductCategorizer/
+├── backend/
+│   ├── app.py
+│   ├── products.db
+│   ├── requirements.txt
+│   └── USED_TECHNOLOGIES.md
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── USED_TECHNOLOGIES.md
+├── README.md
+├── UPDATE.md
 ```
 
-## Usage
+---
 
-1. Frontend application runs on http://localhost:4001 by default
-2. Backend API runs on http://localhost:8000
-3. Use the "Upload Photo" button to upload product photos
-4. The AI model will analyze the photo and provide category suggestions
-5. You can select and approve your desired category
+## Important Notes
+- **User Isolation:** Each user can only see and manage their own products.
+- **Admin Access:** Only users with the admin role can access the admin panel.
+- **Security:** Passwords are hashed with bcrypt. JWT is used for all authentication.
+- **AI Model:** Uses OpenAI CLIP for image categorization (runs locally, no external API calls).
 
-## Test & Documentation
-- Kapsamlı kod temizliği ve test süreci için: `TEST_1.md`
-- Kullanılan teknolojilerin açıklamaları için: `backend/USED_TECHNOLOGIES.md`, `frontend/USED_TECHNOLOGIES.md`
-- CORS ve güvenlik ayarları test edilmiştir.
-- ESLint/linter uyarıları giderilmiştir.
+---
+
+## Documentation
+- See `USED_TECHNOLOGIES.md` in each folder for detailed technology usage.
+- See `UPDATE.md` for a list of all features added after the initial project setup.
+
+---
 
 ## License
-
 MIT
 
 ## Contact

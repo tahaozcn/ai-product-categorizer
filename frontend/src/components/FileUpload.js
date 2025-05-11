@@ -28,7 +28,12 @@ import {
 import { FaUpload, FaCamera, FaMobile, FaDesktop } from 'react-icons/fa';
 import axios from 'axios';
 import { CloseIcon } from '@chakra-ui/icons';
+import { useNavigate } from 'react-router-dom';
 
+/**
+ * File upload component that handles image uploads and camera capture
+ * Supports both file selection and camera capture for product images
+ */
 const FileUpload = ({ onUploadSuccess, isMobileView }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -43,13 +48,22 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
   const fileInputRef = useRef(null);
   const { colorMode, toggleColorMode } = useColorMode();
   const [categoryErrorModal, setCategoryErrorModal] = useState(false);
+  const navigate = useNavigate();
 
+  /**
+   * Handles file selection from input
+   * Creates a preview URL for the selected image
+   */
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
 
+  /**
+   * Initializes and starts the camera for image capture
+   * Handles various camera-related errors with appropriate messages
+   */
   const startCamera = async () => {
     try {
       // Update camera state first
@@ -153,6 +167,10 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
     }, 'image/jpeg');
   };
 
+  /**
+   * Handles file upload to the server
+   * Shows appropriate error messages for various failure cases
+   */
   const handleUpload = async () => {
     if (!selectedFile) {
       toast({
@@ -174,7 +192,7 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
       setAnalysisResult(response.data);
       setIsModalOpen(true);
     } catch (error) {
-      // Kategori bulunamadı hatası için özel modal
+      // Special modal for category not found error
       if (error.response && error.response.data && error.response.data.error === 'No category found for this product.') {
         setCategoryErrorModal(true);
       } else {
@@ -219,6 +237,7 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
     setPreviewUrl(null);
     setAnalysisResult(null);
     setSelectedCategory(null);
+    navigate('/products');
     
     // Fetch updated products list
     axios.get('http://localhost:8000/api/products')
@@ -255,15 +274,6 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
 
   return (
     <>
-      <Box position="absolute" top={4} right={4}>
-        <IconButton
-          icon={colorMode === 'light' ? <FaMobile /> : <FaDesktop />}
-          onClick={toggleColorMode}
-          aria-label="Toggle view mode"
-          variant="ghost"
-        />
-      </Box>
-
       <Card 
         w="full" 
         variant="elevated" 
@@ -397,15 +407,15 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
                   )}
                   {previewUrl && (
                     <Box position="relative" display="inline-block" mt={4}>
-                      <Image
-                        src={previewUrl}
-                        alt="Preview"
+                    <Image
+                      src={previewUrl}
+                      alt="Preview"
                         maxH={isMobileView ? "200px" : "300px"}
-                        mx="auto"
-                        objectFit="contain"
-                        borderRadius="md"
-                        boxShadow="md"
-                      />
+                      mx="auto"
+                      objectFit="contain"
+                      borderRadius="md"
+                      boxShadow="md"
+                    />
                       <IconButton
                         icon={<CloseIcon />}
                         size="sm"
@@ -476,71 +486,71 @@ const FileUpload = ({ onUploadSuccess, isMobileView }) => {
                     No category found for this product.
                   </Box>
                 ) : (
-                  <Box>
-                    <Text fontWeight="bold" mb={2} fontSize={isMobileView ? "sm" : "md"}>
-                      Choose the correct category:
-                    </Text>
-                    <RadioGroup 
-                      onChange={(value) => setSelectedCategory(analysisResult.categories[parseInt(value)])} 
-                      value={selectedCategory ? analysisResult.categories.findIndex(cat => cat === selectedCategory).toString() : undefined}
-                    >
-                      <Stack spacing={3}>
-                        {[...analysisResult.categories]
-                          .sort((a, b) => b.confidence - a.confidence)
-                          .map((category, index) => (
-                            <Box 
-                              key={index}
-                              as="label"
-                              p={3}
-                              bg={
-                                selectedCategory === category ? "blue.50" :
-                                category.confidence > 0.7 ? "green.50" :
-                                category.confidence > 0.5 ? "yellow.50" : "red.50"
-                              }
-                              borderRadius="md"
-                              borderWidth="1px"
-                              borderColor={
-                                selectedCategory === category ? "blue.200" :
-                                category.confidence > 0.7 ? "green.200" :
-                                category.confidence > 0.5 ? "yellow.200" : "red.200"
-                              }
-                              boxShadow="sm"
-                              cursor="pointer"
-                              _hover={{
-                                transform: "translateY(-2px)",
-                                boxShadow: "md",
-                              }}
-                              transition="all 0.2s"
+                <Box>
+                  <Text fontWeight="bold" mb={2} fontSize={isMobileView ? "sm" : "md"}>
+                    Choose the correct category:
+                  </Text>
+                  <RadioGroup 
+                    onChange={(value) => setSelectedCategory(analysisResult.categories[parseInt(value)])} 
+                    value={selectedCategory ? analysisResult.categories.findIndex(cat => cat === selectedCategory).toString() : undefined}
+                  >
+                    <Stack spacing={3}>
+                      {[...analysisResult.categories]
+                        .sort((a, b) => b.confidence - a.confidence)
+                        .map((category, index) => (
+                          <Box 
+                            key={index}
+                            as="label"
+                            p={3}
+                            bg={
+                              selectedCategory === category ? "blue.50" :
+                              category.confidence > 0.7 ? "green.50" :
+                              category.confidence > 0.5 ? "yellow.50" : "red.50"
+                            }
+                            borderRadius="md"
+                            borderWidth="1px"
+                            borderColor={
+                              selectedCategory === category ? "blue.200" :
+                              category.confidence > 0.7 ? "green.200" :
+                              category.confidence > 0.5 ? "yellow.200" : "red.200"
+                            }
+                            boxShadow="sm"
+                            cursor="pointer"
+                            _hover={{
+                              transform: "translateY(-2px)",
+                              boxShadow: "md",
+                            }}
+                            transition="all 0.2s"
+                          >
+                            <Radio 
+                              value={index.toString()}
+                              mb={2}
+                              isChecked={selectedCategory === category}
                             >
-                              <Radio 
-                                value={index.toString()}
-                                mb={2}
-                                isChecked={selectedCategory === category}
-                              >
-                                <Text 
-                                  color="gray.800" 
-                                  fontWeight="medium"
-                                  fontSize={isMobileView ? "sm" : "md"}
-                                  ml={2}
-                                >
-                                  {category.name}
-                                </Text>
-                              </Radio>
                               <Text 
-                                fontSize={isMobileView ? "xs" : "sm"} 
-                                color={
-                                  category.confidence > 0.7 ? "green.600" :
-                                  category.confidence > 0.5 ? "yellow.600" : "red.600"
-                                }
-                                ml={6}
+                                color="gray.800" 
+                                fontWeight="medium"
+                                fontSize={isMobileView ? "sm" : "md"}
+                                ml={2}
                               >
-                                Confidence Score: {(category.confidence * 100).toFixed(1)}%
+                                {category.name}
                               </Text>
-                            </Box>
-                        ))}
-                      </Stack>
-                    </RadioGroup>
-                  </Box>
+                            </Radio>
+                            <Text 
+                              fontSize={isMobileView ? "xs" : "sm"} 
+                              color={
+                                category.confidence > 0.7 ? "green.600" :
+                                category.confidence > 0.5 ? "yellow.600" : "red.600"
+                              }
+                              ml={6}
+                            >
+                              Confidence Score: {(category.confidence * 100).toFixed(1)}%
+                            </Text>
+                          </Box>
+                      ))}
+                    </Stack>
+                  </RadioGroup>
+                </Box>
                 )}
               </VStack>
             )}

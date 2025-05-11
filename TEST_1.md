@@ -1,68 +1,68 @@
-# Test 1: Kapsamlı Kod Temizliği ve Fonksiyonel Test Raporu
+# Test 1: Comprehensive Code Cleanup and Functional Test Report
 
-Bu dosya, projede yapılan kapsamlı kod temizliği, bağımlılık yönetimi, fonksiyonel testler ve alınan aksiyonların özetini ve açıklamalarını içerir. Proje sunumunda referans olarak kullanılabilir.
-
----
-
-## 1. Başlangıç Checkpoint'i
-- Kodun mevcut, çalışan ve test edilmiş hali bir git branch'i olarak kaydedildi: `checkpoint/temizlik-oncesi`
-- Her kritik adımda yeni checkpoint'ler alındı (örn. `checkpoint/eslint-oncesi`)
+This file summarizes the comprehensive code cleanup, dependency management, functional tests, and actions taken in the project. It can be used as a reference in project presentations.
 
 ---
 
-## 2. Kod Temizliği ve Bağımlılık Yönetimi
-- **Frontend ve backend dosyalarında kullanılmayan importlar, fonksiyonlar ve değişkenler temizlendi.**
-- **Backend/requirements.txt** dosyasında gereksiz bağımlılıklar kaldırıldı:
-  - Kaldırılanlar: `psycopg2-binary`, `python-dotenv`, `requests`, `openai`, `python-multipart`
-  - Kalanlar: `Flask`, `Flask-CORS`, `gunicorn`, `Pillow`, `torch`, `torchvision`, `transformers`, `numpy`, `clip`
-- **Kullanılan teknolojiler** ve amaçları ayrı dosyalarda özetlendi: `backend/USED_TECHNOLOGIES.md`, `frontend/USED_TECHNOLOGIES.md`
+## 1. Initial Checkpoint
+- The current, working, and tested state of the code was saved as a git branch: `checkpoint/temizlik-oncesi`
+- New checkpoints were created at every critical step (e.g., `checkpoint/eslint-oncesi`)
 
 ---
 
-## 3. Fonksiyonel Testler
-- **Backend ve frontend başlatıldı, temel işlevler test edildi:**
-  - Ürün yükleme ve analiz
-  - Ürün listeleme
-  - Kategorilendirme
-- **CORS ve güvenlik testleri:**
-  - Tarayıcıda Network panelinde CORS başlıkları kontrol edildi
-  - `Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials` gibi başlıkların doğru olduğu ekran görüntüleri alındı
-- **API testleri:**
-  - http://localhost:8000/api/products adresinden JSON veri alındı
-  - Frontend ve backend arasındaki iletişim doğrulandı
+## 2. Code Cleanup and Dependency Management
+- **Unused imports, functions, and variables were removed from frontend and backend files.**
+- **Unnecessary dependencies were removed from `backend/requirements.txt`:**
+  - Removed: `psycopg2-binary`, `python-dotenv`, `requests`, `openai`, `python-multipart`
+  - Kept: `Flask`, `Flask-CORS`, `gunicorn`, `Pillow`, `torch`, `torchvision`, `transformers`, `numpy`, `clip`
+- **Technologies used** and their purposes were summarized in separate files: `backend/USED_TECHNOLOGIES.md`, `frontend/USED_TECHNOLOGIES.md`
 
 ---
 
-## 4. ESLint ve Linter Uyarıları
-- **ESLint uyarıları giderildi:**
-  - `useEffect` içinde kullanılan fonksiyonlar dependency array'e eklendi
-  - `fetchProducts` fonksiyonu `useCallback` ile sarmalandı
-- **Runtime hatası oluşursa checkpoint'e geri dönüldü**
+## 3. Functional Tests
+- **Backend and frontend were started, and core features were tested:**
+  - Product upload and analysis
+  - Product listing
+  - Categorization
+- **CORS and security tests:**
+  - CORS headers were checked in the browser's Network panel
+  - Screenshots were taken showing correct headers like `Access-Control-Allow-Origin`, `Access-Control-Allow-Credentials`
+- **API tests:**
+  - JSON data was retrieved from http://localhost:8000/api/products
+  - Communication between frontend and backend was verified
 
 ---
 
-## 5. Ekran Görüntüleri ve Test Kanıtları
-- Test sürecinde alınan ekran görüntüleri:
-  - Frontend ve backend'in başarılı şekilde çalıştığı arayüzler
-  - CORS başlıklarının doğru şekilde geldiği Network paneli
-  - API'den dönen JSON veri örnekleri
-  - Hata ve uyarı ekranları (ör. runtime error, ESLint warning)
+## 4. ESLint and Linter Warnings
+- **ESLint warnings were resolved:**
+  - Functions used inside `useEffect` were added to the dependency array
+  - The `fetchProducts` function was wrapped with `useCallback`
+- **If a runtime error occurred, the code was reverted to the last checkpoint**
 
 ---
 
-## 6. Sonuç ve Değerlendirme
-- Kodun işlevselliği ve temizliği güvence altına alındı
-- Tüm kritik adımlar ve değişiklikler checkpoint'lerle kaydedildi
-- Proje, modern React ve Python standartlarına uygun hale getirildi
-- Sunum ve dokümantasyon için gerekli özetler ve raporlar hazırlandı
+## 5. Screenshots and Test Evidence
+- Screenshots taken during the test process:
+  - Interfaces showing successful operation of frontend and backend
+  - Network panel showing correct CORS headers
+  - Example JSON data returned from the API
+  - Error and warning screens (e.g., runtime error, ESLint warning)
 
 ---
 
-## Açıklamalar ve Notlar
-- Her adımda yapılan değişiklikler, alınan kararlar ve karşılaşılan sorunlar detaylıca açıklandı
-- Kodun bozulması durumunda hızlıca geri dönülebilecek güvenli noktalar oluşturuldu
-- Testler sırasında alınan tüm ekran görüntüleri ve loglar arşivlendi (görselleri sunumda ayrıca gösterebilirsin)
+## 6. Conclusion and Evaluation
+- Code functionality and cleanliness were ensured
+- All critical steps and changes were recorded with checkpoints
+- The project was brought up to modern React and Python standards
+- Summaries and reports necessary for presentation and documentation were prepared
 
 ---
 
-**Bu dosya, projenin teknik sunumunda ve kod kalitesi değerlendirmesinde referans olarak kullanılabilir.** 
+## Explanations and Notes
+- All changes, decisions, and encountered issues at each step were explained in detail
+- Safe points were created for quick rollback in case of code breakage
+- All screenshots and logs taken during tests were archived (you can show visuals separately in the presentation)
+
+---
+
+**This file can be used as a reference in the project's technical presentation and code quality evaluation.** 
