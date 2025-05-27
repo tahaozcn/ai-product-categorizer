@@ -223,17 +223,17 @@ The platform is fully responsive and works seamlessly across all devices:
 ## 📚 Documentation
 
 ### 📖 Complete Documentation
-- **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** - Comprehensive graduation project guide
+- **[PROJECT_GUIDE.md](PROJECT_GUIDE.md)** - Comprehensive project guide and features
 - **[TECHNOLOGIES.md](TECHNOLOGIES.md)** - Detailed technology stack and implementation
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete REST API reference
 
-### 🎓 Academic Context
-This project serves as a graduation project demonstrating:
+### 🎯 Project Highlights
+This project demonstrates:
 - Full-stack web development skills
 - AI/ML integration capabilities
 - Modern software architecture
 - Industry best practices
-- Problem-solving and project management
+- Problem-solving and technical implementation
 
 ## 🔮 Future Enhancements
 
@@ -251,20 +251,20 @@ This project serves as a graduation project demonstrating:
 - Multi-language support
 - Social features and wishlists
 
-## 🤝 Contributing
+## �� Contributing
 
-This is a graduation project created for educational purposes. The codebase demonstrates modern development practices and serves as a learning resource for full-stack development with AI integration.
+This project demonstrates modern development practices and serves as a learning resource for full-stack development with AI integration.
 
 ## 📄 License
 
-This project is created for educational purposes as part of a graduation project.
+This project is created for educational and demonstration purposes.
 
 ## 👨‍💻 Author
 
-**Graduation Project**
-- Computer Science Department
-- Demonstrates full-stack development with AI integration
-- Modern e-commerce platform implementation
+**AI Product Categorizer**
+- Full-stack e-commerce platform
+- AI-powered product categorization
+- Modern web development implementation
 
 ---
 
