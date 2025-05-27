@@ -1,4 +1,8 @@
-# Python
+# ===========================================
+# AI Product Categorizer - .gitignore
+# ===========================================
+
+# Python Backend
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,6 +11,9 @@ __pycache__/
 venv/
 .venv/
 env/
+ENV/
+env.bak/
+venv.bak/
 build/
 develop-eggs/
 dist/
@@ -22,8 +29,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.log
 
-# Node
+# React Frontend
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -33,17 +41,67 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+build/
+dist/
 
-# IDE
+# Database Files
+*.db-journal
+*.sqlite-journal
+
+# IDE & Editors
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-*
+.vs/
 
-# OS
+# Operating System
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Project specific
+# Project Specific
 backend/uploads/*
-!backend/uploads/.gitkeep 
+!backend/uploads/.gitkeep
+backend/products.db.backup*
+*.tmp
+*.temp
+
+# Internal Documentation (not for GitHub)
+DEPLOYMENT_CHECKLIST.md
+
+# Development & Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs
+logs/
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Runtime
+*.pid
+*.seed
+*.lock
+
+# Documentation (keep main docs)
+docs/_build/
+
+# Keep important setup files for collaborators
+!SETUP_GUIDE.md
+!README.md
+!PROJECT_GUIDE.md
+!TECHNOLOGIES.md
+!API_DOCUMENTATION.md 

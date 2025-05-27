@@ -1,150 +1,204 @@
 import React from 'react';
 import {
   ChakraProvider,
-  CSSReset,
   Box,
   Flex,
-  Spacer,
   Button,
-  Link as ChakraLink
+  IconButton,
+  useColorMode,
+  useColorModeValue,
+  Container,
+  Text,
+  VStack,
+  HStack,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  DrawerHeader,
+  DrawerBody,
+  useDisclosure,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Divider,
+  Badge,
 } from '@chakra-ui/react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink, useLocation } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import RegisterForm from './components/RegisterForm';
-import LoginForm from './components/LoginForm';
+import { BrowserRouter as Router, Routes, Route, Link as RouterLink, useNavigate, Navigate } from 'react-router-dom';
+import { FaMoon, FaSun, FaBars, FaUser, FaShoppingCart } from 'react-icons/fa';
 import ProductUpload from './components/ProductUpload';
 import ProductList from './components/ProductList';
 import ProfilePage from './components/ProfilePage';
-import AdminPanel from './components/AdminPanel';
-import { FaMobile, FaDesktop } from 'react-icons/fa';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CartProvider, useCart } from './contexts/CartContext';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
+import CartPage from './components/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrdersPage from './pages/OrdersPage';
+import HomePage from './pages/HomePage';
+import ProductsPage from './pages/ProductsPage';
+import SellerDashboard from './pages/SellerDashboard';
+import RoleBasedHome from './pages/RoleBasedHome';
+import MyProducts from './pages/MyProducts';
 
-// Protected Route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
-  if (!isAuthenticated()) return <Navigate to="/login" />;
-  return children;
-};
-
-// Admin Route component
-const AdminRoute = ({ children }) => {
-  const { isAdmin, loading, isAuthenticated } = useAuth();
-  if (loading) return <div>Loading...</div>;
-  if (!isAuthenticated() || !isAdmin()) return <Navigate to="/" />;
-  return children;
-};
-
-// Role-based Navigation Bar
-const NavBar = () => {
-  const { isAuthenticated, user, logout, isAdmin } = useAuth();
-  const location = useLocation();
-  if (!isAuthenticated()) return null;
-  const isActive = (path) => location.pathname === path;
+const Navbar = ({ onOpen }) => {
+  const { logout, user } = useAuth();
+  const { itemCount } = useCart();
+  const navigate = useNavigate();
+  const isSeller = user && user.role === 'seller';
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   return (
-    <Flex as="nav" bg="gray.100" p={4} mb={8} align="center">
-      {/* User navigation */}
-      {!isAdmin() && (
-        <>
-          <ChakraLink as={RouterLink} to="/" fontWeight="bold" fontSize="lg" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
-            borderBottom={isActive('/') ? '3px solid #38A169' : 'none'} color={isActive('/') ? 'green.700' : undefined}>
-            Upload Product
-          </ChakraLink>
-          <ChakraLink as={RouterLink} to="/products" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
-            borderBottom={isActive('/products') ? '3px solid #38A169' : 'none'} color={isActive('/products') ? 'green.700' : undefined}>
-            My Products
-          </ChakraLink>
-        </>
-      )}
-      {/* Admin navigation */}
-      {isAdmin() && (
-        <>
-          <ChakraLink as={RouterLink} to="/admin" fontWeight="bold" fontSize="lg" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
-            borderBottom={isActive('/admin') ? '3px solid #38A169' : 'none'} color={isActive('/admin') ? 'green.700' : undefined}>
-            User Management
-          </ChakraLink>
-        </>
-      )}
-      <ChakraLink as={RouterLink} to="/profile" mr={4} _hover={{ textDecoration: 'none', color: 'green.600' }}
-        borderBottom={isActive('/profile') ? '3px solid #38A169' : 'none'} color={isActive('/profile') ? 'green.700' : undefined}>
-        My Profile
-      </ChakraLink>
-      <Spacer />
-      <Box fontSize="sm" color="gray.600" mr={4}>{user?.email}</Box>
-      <Button colorScheme="green" size="sm" onClick={logout}>Logout</Button>
+    <Flex
+      as="nav"
+      align="center"
+      justify="space-between"
+      px={6}
+      py={4}
+      bg="rgba(255, 255, 255, 0.95)"
+      backdropFilter="blur(10px)"
+      boxShadow="0 8px 32px rgba(0, 0, 0, 0.1)"
+      position="sticky"
+      top={0}
+      zIndex={1000}
+      borderBottom="1px solid rgba(255, 255, 255, 0.2)"
+    >
+      <HStack spacing={4} align="center">
+        <Text
+          as={RouterLink}
+          to="/"
+          fontWeight="bold"
+          fontSize="xl"
+          color="purple.700"
+          _hover={{ textDecoration: 'none', opacity: 0.8 }}
+        >
+          AI Product Categorizer
+        </Text>
+        <HStack spacing={6} ml={8}>
+          <Button as={RouterLink} to="/products" variant="ghost" color="purple.700">🏪 Marketplace</Button>
+          {user && !isSeller && (
+            <Button as={RouterLink} to="/orders" variant="ghost" color="purple.700">📦 Order History</Button>
+          )}
+          {isSeller && (
+            <>
+              <Button as={RouterLink} to="/seller-dashboard" variant="ghost" color="purple.700">➕ Add Product</Button>
+              <Button as={RouterLink} to="/my-products" variant="ghost" color="purple.700">📋 My Products</Button>
+            </>
+          )}
+        </HStack>
+      </HStack>
+      <HStack spacing={4}>
+        {/* Shopping Cart Icon - Only for customers */}
+        {!isSeller && (
+          <Button
+            as={RouterLink}
+            to="/cart"
+            variant="ghost"
+            color="purple.700"
+            leftIcon={<FaShoppingCart />}
+            position="relative"
+          >
+            Cart
+            {itemCount > 0 && (
+              <Badge
+                colorScheme="red"
+                borderRadius="full"
+                position="absolute"
+                top="-1"
+                right="-1"
+                fontSize="xs"
+                minW="20px"
+                h="20px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                {itemCount}
+              </Badge>
+            )}
+          </Button>
+        )}
+
+        {user ? (
+          <Menu>
+            <MenuButton as={Button} variant="ghost" leftIcon={<FaUser />}>
+              <HStack spacing={2}>
+                <Text>{isSeller ? '🏪' : '🛍️'}</Text>
+                <Text>{user.email?.split('@')[0] || 'User'}</Text>
+              </HStack>
+            </MenuButton>
+            <MenuList>
+              <MenuItem as={RouterLink} to="/profile">Profile</MenuItem>
+              <Divider />
+              <MenuItem onClick={handleLogout}>Sign Out</MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
+          <>
+            <Button as={RouterLink} to="/login" variant="ghost" color="purple.700">Sign in</Button>
+            <Button as={RouterLink} to="/register" colorScheme="purple">Get Started</Button>
+          </>
+        )}
+      </HStack>
     </Flex>
   );
 };
 
-// Role-based Home Redirect
-const HomeRedirect = ({ isMobileView }) => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
   if (!isAuthenticated()) return <Navigate to="/login" />;
-  if (isAdmin()) return <Navigate to="/admin" />; // Adminler admin paneline
-  return <ProductUpload isMobileView={isMobileView} />; // Userlar ürün yükleme sayfasına
+  return children;
 };
 
 function App() {
-  const [isMobileView, setIsMobileView] = React.useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <ChakraProvider>
-      <CSSReset />
       <AuthProvider>
-        <Router>
-          <NavBar />
-          {/* Mobil/desktop geçiş ikonu sağ alt köşede sabit */}
-          <Box position="fixed" bottom={6} right={6} zIndex={1000}>
-            <Button
-              colorScheme="blue"
-              borderRadius="full"
-              boxShadow="lg"
-              size="lg"
-              onClick={() => setIsMobileView(v => !v)}
-              leftIcon={isMobileView ? <FaDesktop /> : <FaMobile />}
-              aria-label="Toggle mobile/desktop view"
+        <CartProvider>
+          <Router>
+            <Box
+              minH="100vh"
+              bg="linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
+              position="relative"
             >
-              {isMobileView ? 'Desktop' : 'Mobile'}
-            </Button>
+              {/* Background Pattern */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                backgroundImage="radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.8) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(226, 232, 240, 0.8) 0%, transparent 50%)"
+                pointerEvents="none"
+              />
+              <Box position="relative" zIndex={1}>
+                <Navbar onOpen={onOpen} />
+                <Container maxW="container.xl" py={8}>
+                  <Routes>
+                    <Route path="/" element={<RoleBasedHome />} />
+                    <Route path="/login" element={<LoginForm />} />
+                    <Route path="/register" element={<RegisterForm />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/seller-dashboard" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+                    <Route path="/my-products" element={<ProtectedRoute><MyProducts /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                    <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+                  </Routes>
+                </Container>
               </Box>
-          <Routes>
-            <Route path="/register" element={<RegisterForm />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <HomeRedirect isMobileView={isMobileView} />
-                </ProtectedRoute>
-              } 
-            />
-            {/* User routes */}
-            <Route 
-              path="/products" 
-              element={
-                <ProtectedRoute>
-                  <ProductList isMobileView={isMobileView} />
-                </ProtectedRoute>
-              } 
-            />
-            {/* Admin panel route */}
-            <Route 
-              path="/admin" 
-              element={
-                <AdminRoute>
-                  <AdminPanel isMobileView={isMobileView} />
-                </AdminRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <ProfilePage isMobileView={isMobileView} />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </Router>
+            </Box>
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </ChakraProvider>
   );

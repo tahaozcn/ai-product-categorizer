@@ -6,7 +6,6 @@ from PIL import Image
 import torch
 from transformers import CLIPProcessor, CLIPModel
 import sqlite3
-import clip
 import time
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -16,7 +15,7 @@ import json
 import bcrypt
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*", "allow_headers": ["Content-Type", "Authorization"], "supports_credentials": True}})
+CORS(app, supports_credentials=True, origins="*")
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
@@ -54,8 +53,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS products
         (id TEXT PRIMARY KEY,
          name TEXT,
+         description TEXT,
          image_url TEXT,
          categories TEXT,
+         price REAL,
          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
          user_id INTEGER)
     ''')
@@ -64,10 +65,6 @@ def init_db():
 
 # Create the database when the app starts
 init_db()
-
-# CLIP modelini yükle
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model, preprocess = clip.load("ViT-B/32", device=device)
 
 def get_model():
     global _model
@@ -122,23 +119,6 @@ PRODUCT_HIERARCHY = {
             "Kitchenware": ["pots", "pans", "utensils", "dinnerware"],
             "Lighting": ["lamps", "ceiling lights", "wall lights"],
             "Storage & Organization": ["shelves", "storage boxes", "organizers"]
-        }
-    },
-    "Appliances": {
-        "prompt": "a product photo of {}, household appliance",
-        "subcategories": {
-            "Large Appliances": {
-                "Refrigerators": ["refrigerator", "fridge freezer"],
-                "Washing Machines": ["washing machine", "dryer"]
-            },
-            "Small Appliances": {
-                "Toasters": ["toaster", "toaster oven"],
-                "Vacuum Cleaners": ["vacuum cleaner", "handheld vacuum"]
-            },
-            "Kitchen Appliances": {
-                "Microwave": ["microwave oven"],
-                "Coffee Makers": ["coffee machine", "espresso maker"]
-            }
         }
     },
     "Beauty & Personal Care": {
@@ -221,18 +201,7 @@ PRODUCT_HIERARCHY = {
             "Collectibles": ["action figures", "model kits", "collectible cards"]
         }
     },
-    "Mobile & Computer Accessories": {
-        "prompt": "a product photo of {}, clearly showing it is an accessory or case, not the main device",
-        "subcategories": {
-            "Phone Accessories": {
-                "Cases & Covers": ["protective phone case", "phone cover", "smartphone case"],
-                "Screen Protection": ["screen protector", "tempered glass"],
-                "Holders": ["phone stand", "phone mount", "phone grip"]
-            },
-            "Computer Peripherals": ["computer keyboard", "computer mouse", "external drive"]
-        }
-    },
-    "Travel & Luggage": {
+    "Travel & Luggages": {
         "prompt": "a product photo of {}, travel or luggage item",
         "subcategories": {
             "Luggage & Bags": ["suitcases", "travel bags", "backpacks"],
@@ -348,64 +317,87 @@ def upload_file():
     """Upload a product image, analyze it, and save the product for the authenticated user."""
     if request.method == 'OPTIONS':
         return '', 200
-    payload = get_jwt_payload()
-    if not payload or not payload.get('user_id'):
-        return jsonify({'error': 'Authorization header missing or invalid'}), 401
-    user_id = payload['user_id']
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    
     try:
+        payload = get_jwt_payload()
+        if not payload or not payload.get('user_id'):
+            return jsonify({'error': 'Authorization header missing or invalid'}), 401
+        user_id = payload['user_id']
+        
+        # Form verilerini al
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+            
+        # Ürün bilgilerini al
+        name = request.form.get('name')
+        description = request.form.get('description')
+        price = request.form.get('price')
+        selected_categories = request.form.get('categories')  # JSON string olarak gelecek
+        
+        if not name or not description or not price or not selected_categories:
+            return jsonify({'error': 'Missing required product information'}), 400
+        
+        # Parse categories
+        import json
+        categories_list = json.loads(selected_categories)
+        
         # Save the file
         filename = secure_filename(file.filename)
         timestamp = str(int(time.time() * 1000))
         unique_filename = f"{timestamp}_{filename}"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(filepath)
-        # Analyze the image
-        results = analyze_image(filepath)
-        if not results:
-            # Delete the image file if analysis fails
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            return jsonify({'error': 'Failed to analyze image'}), 500
-        # If categories are empty, do not save and delete the image
-        if not results['categories'] or len(results['categories']) == 0:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-            return jsonify({'error': 'No category found for this product.'}), 400
-        # Save product to database
-        product_id = timestamp
-        product_data = {
-            'id': product_id,
-            'name': f"Product {product_id}",
-            'image_url': f"/uploads/{unique_filename}",
-            'categories': results['categories'],
-            'user_id': user_id
-        }
+        
+        # Get user info for seller name
         conn = sqlite3.connect('products.db')
         c = conn.cursor()
-        c.execute('''
-            INSERT INTO products (id, name, image_url, categories, user_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (
-            product_data['id'],
-            product_data['name'],
-            product_data['image_url'],
-            str(results['categories']),
+        
+        c.execute('SELECT name_surname, email FROM users WHERE id = ?', (user_id,))
+        user_info = c.fetchone()
+        seller_name = user_info[0] if user_info and user_info[0] else user_info[1].split('@')[0] if user_info else 'Unknown Seller'
+        
+        # Save product to database
+        product_id = timestamp
+        insert_query = '''
+            INSERT INTO products (id, name, description, image_url, categories, price, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        '''
+        insert_values = (
+            product_id,
+            name,
+            description,
+            f"/uploads/{unique_filename}",
+            json.dumps(categories_list),
+            float(price),
             user_id
-        ))
+        )
+        
+        c.execute(insert_query, insert_values)
         conn.commit()
         conn.close()
+        
+        product_data = {
+            'id': product_id,
+            'name': name,
+            'description': description,
+            'image_url': f"/uploads/{unique_filename}",
+            'categories': categories_list,
+            'price': float(price),
+            'seller': seller_name,
+            'user_id': user_id
+        }
+        
         return jsonify(product_data)
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/products', methods=['GET', 'OPTIONS'])
+@app.route('/api/products', methods=['GET', 'POST'])
 def get_products():
-    """Get all products belonging to the authenticated user."""
+    """Get all products belonging to the authenticated user or add a new product."""
     if request.method == 'OPTIONS':
         return '', 200
     payload = get_jwt_payload()
@@ -414,57 +406,139 @@ def get_products():
     user_id = payload['user_id']
     conn = sqlite3.connect('products.db')
     c = conn.cursor()
-    c.execute('SELECT * FROM products WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
-    products = c.fetchall()
-    conn.close()
-    product_list = []
-    for product in products:
-        product_list.append({
-            'id': product[0],
-            'name': product[1],
-            'image_url': product[2],
-            'categories': eval(product[3])  # Convert string to list/dict
-        })
-    return jsonify(product_list)
+    if request.method == 'GET':
+        # Use explicit column selection to ensure correct mapping
+        c.execute('''
+            SELECT id, name, image_url, categories, created_at, user_id, description, price 
+            FROM products 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC
+        ''', (user_id,))
+        products = c.fetchall()
+        conn.close()
+        
+        product_list = []
+        for product in products:
+            try:
+                # Correct column mapping: 0:id, 1:name, 2:image_url, 3:categories, 4:created_at, 5:user_id, 6:description, 7:price
+                categories_data = product[3] if product[3] else '[]'
+                if isinstance(categories_data, str):
+                    categories = json.loads(categories_data)
+                else:
+                    categories = categories_data
+            except (json.JSONDecodeError, TypeError):
+                categories = []
+                
+            product_list.append({
+                'id': product[0],
+                'name': product[1],
+                'image_url': product[2],
+                'categories': categories,
+                'description': product[6] if product[6] else f"Description for {product[1]}",
+                'price': product[7] if product[7] else 0.0,
+                'created_at': product[4]
+            })
+        return jsonify(product_list)
+    elif request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        description = data.get('description')
+        price = data.get('price')
+        categories = data.get('categories')
+        image = data.get('image')  # Demo amaçlı, gerçek uygulamada dosya upload ayrı olmalı
+        if not name or not description or not price or not categories:
+            return jsonify({'error': 'Missing required fields'}), 400
+        # Demo: ürün id'si olarak timestamp kullan
+        import time
+        product_id = str(int(time.time() * 1000))
+        c.execute('''
+            INSERT INTO products (id, name, image_url, categories, price, user_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            product_id,
+            name,
+            image if image else '',
+            str(categories),
+            float(price),
+            user_id
+        ))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Product saved successfully!'}), 201
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/api/products/<product_id>', methods=['DELETE', 'OPTIONS'])
-def delete_product(product_id):
-    """Delete a product if the requesting user is the owner. Only the product owner can delete their product."""
+@app.route('/api/products/<product_id>', methods=['PUT', 'DELETE', 'OPTIONS'])
+def manage_product(product_id):
+    """Update or delete a product if the requesting user is the owner."""
     if request.method == 'OPTIONS':
         response = make_response()
-        response.headers.add('Access-Control-Allow-Methods', 'DELETE')
+        response.headers.add('Access-Control-Allow-Methods', 'PUT, DELETE')
         return response
+    
     payload = get_jwt_payload()
     if not payload or not payload.get('user_id'):
         return jsonify({'error': 'Authorization header missing or invalid'}), 401
     user_id = payload['user_id']
+    
     try:
-        # Connect to database
         conn = sqlite3.connect('products.db')
         cursor = conn.cursor()
+        
         # First check if product exists and get its user_id
-        cursor.execute('SELECT image_url, user_id FROM products WHERE id = ?', (product_id,))
+        cursor.execute('SELECT user_id FROM products WHERE id = ?', (product_id,))
         result = cursor.fetchone()
         if not result:
             conn.close()
             return jsonify({'error': 'Product not found'}), 404
-        image_url, product_user_id = result
+        
+        product_user_id = result[0]
         if str(product_user_id) != str(user_id):
             conn.close()
-            return jsonify({'error': 'You are not authorized to delete this product.'}), 403
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(image_url))
-        # Delete from database first
-        cursor.execute('DELETE FROM products WHERE id = ?', (product_id,))
-        conn.commit()
-        conn.close()
-        # Then try to delete the image file if it exists
-        if os.path.exists(image_path):
-            os.remove(image_path)
-        return jsonify({'message': 'Product deleted successfully'}), 200
+            return jsonify({'error': 'You are not authorized to modify this product.'}), 403
+        
+        if request.method == 'PUT':
+            # Update product
+            data = request.get_json()
+            name = data.get('name')
+            description = data.get('description') 
+            price = data.get('price')
+            
+            if not name or not description or price is None:
+                conn.close()
+                return jsonify({'error': 'Missing required fields'}), 400
+            
+            cursor.execute('''
+                UPDATE products 
+                SET name = ?, description = ?, price = ? 
+                WHERE id = ?
+            ''', (name, description, float(price), product_id))
+            
+            conn.commit()
+            conn.close()
+            return jsonify({'message': 'Product updated successfully'}), 200
+            
+        elif request.method == 'DELETE':
+            # Delete product (existing code)
+            cursor.execute('SELECT image_url FROM products WHERE id = ?', (product_id,))
+            result = cursor.fetchone()
+            image_url = result[0] if result else None
+            
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], os.path.basename(image_url)) if image_url else None
+            
+            # Delete from database first
+            cursor.execute('DELETE FROM products WHERE id = ?', (product_id,))
+            conn.commit()
+            conn.close()
+            
+            # Then try to delete the image file if it exists
+            if image_path and os.path.exists(image_path):
+                os.remove(image_path)
+            
+            return jsonify({'message': 'Product deleted successfully'}), 200
+            
     except Exception as e:
         if 'conn' in locals():
             conn.close()
@@ -476,6 +550,12 @@ def register_user():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    role = data.get('role', 'customer')  # gelen role'u kullan, yoksa customer
+    
+    # Sadece customer ve seller rollerini kabul et
+    if role not in ['customer', 'seller']:
+        role = 'customer'
+    
     if not email or not password:
         return jsonify({'error': 'Email and password are required.'}), 400
     conn = sqlite3.connect('products.db')
@@ -485,11 +565,10 @@ def register_user():
         conn.close()
         return jsonify({'error': 'Email already registered'}), 400
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    role = 'user'
     c.execute('INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)', (email, hashed_password, role))
     conn.commit()
     conn.close()
-    return jsonify({'message': 'User registered successfully as user'}), 201
+    return jsonify({'message': f'User registered successfully as {role}'}), 201
 
 @app.route('/api/login', methods=['POST'])
 def login_user():
@@ -521,8 +600,8 @@ def login_user():
         }
     }), 200
 
-# Admin kontrolü için decorator
-def admin_required(f):
+# Admin kontrolü için decorator - Artık seller kontrolü yapacak
+def seller_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
@@ -531,16 +610,16 @@ def admin_required(f):
         token = auth_header.split(' ')[1]
         try:
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            if payload.get('role') != 'admin':
-                return jsonify({'error': 'Admin access required'}), 403
+            if payload.get('role') != 'seller':
+                return jsonify({'error': 'Seller access required'}), 403
         except Exception as e:
             return jsonify({'error': 'Invalid or expired token'}), 401
         return f(*args, **kwargs)
     return decorated_function
 
-# Tüm kullanıcıları listele (admin)
-@app.route('/api/admin/users', methods=['GET'])
-@admin_required
+# Tüm kullanıcıları listele (seller yetkisi ile)
+@app.route('/api/users', methods=['GET'])
+@seller_required
 def get_all_users():
     conn = sqlite3.connect('products.db')
     c = conn.cursor()
@@ -559,9 +638,9 @@ def get_all_users():
     conn.close()
     return jsonify(users)
 
-# Belirli bir kullanıcının detaylarını getir (admin)
-@app.route('/api/admin/users/<int:user_id>', methods=['GET'])
-@admin_required
+# Belirli bir kullanıcının detaylarını getir (seller yetkisi ile)
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+@seller_required
 def get_user_detail(user_id):
     conn = sqlite3.connect('products.db')
     c = conn.cursor()
@@ -590,9 +669,9 @@ def update_user(user_id):
     payload = get_jwt_payload()
     if not payload:
         return jsonify({'error': 'Authorization header missing or invalid'}), 401
-    is_admin = payload.get('role') == 'admin'
+    is_seller = payload.get('role') == 'seller'
     is_self = payload.get('user_id') == user_id
-    if not (is_admin or is_self):
+    if not (is_seller or is_self):
         return jsonify({'error': 'Forbidden'}), 403
 
     data = request.get_json()
@@ -695,22 +774,94 @@ def get_profile():
     conn.close()
     if not user:
         return jsonify({'error': 'User not found'}), 404
-    # Eğer admin ise tüm alanları döndür (id hariç password_hash hariç)
-    if user[2] == 'admin':
-        return jsonify({
-            'email': user[1],
-            'role': user[2],
-            'name_surname': user[3],
-            'address': user[4],
-            'phone': user[5]
-        })
-    # User ise sadece email, name_surname, address, phone döndür
+    # Tüm rollerde aynı bilgileri döndür
     return jsonify({
         'email': user[1],
+        'role': user[2],
         'name_surname': user[3],
         'address': user[4],
         'phone': user[5]
     })
 
+@app.route('/api/categorize', methods=['POST'])
+def categorize_image():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image uploaded'}), 400
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    # Save the file
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+    # Analyze the image
+    results = analyze_image(filepath)
+    if not results or not results.get('categories'):
+        return jsonify({'error': 'AI categorization failed'}), 500
+    return jsonify({'categories': results['categories']})
+
+@app.route('/api/all-products', methods=['GET', 'OPTIONS'])
+def get_all_products():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        conn = sqlite3.connect('products.db')
+        c = conn.cursor()
+        c.execute('''
+            SELECT p.id, p.name, p.image_url, p.categories, p.created_at, p.user_id, p.description, p.price, u.name_surname, u.email 
+            FROM products p 
+            LEFT JOIN users u ON p.user_id = u.id 
+            ORDER BY p.created_at DESC
+        ''')
+        products = c.fetchall()
+        conn.close()
+        
+        product_list = []
+        for product in products:
+            try:
+                # Correct column mapping based on actual schema:
+                # 0: id, 1: name, 2: image_url, 3: categories, 4: created_at, 5: user_id, 6: description, 7: price, 8: name_surname, 9: email
+                product_id = product[0]
+                name = product[1]
+                image_url = product[2]
+                categories_data = product[3] if product[3] else '[]'
+                description = product[6] if product[6] else f"Description for {name}"
+                price = product[7] if product[7] else 0.0
+                user_name_surname = product[8]
+                user_email = product[9]
+                
+                # Safely parse categories JSON
+                if isinstance(categories_data, str):
+                    categories = json.loads(categories_data)
+                else:
+                    categories = categories_data
+                    
+            except (json.JSONDecodeError, TypeError) as e:
+                categories = []  # Fallback to empty array
+            
+            seller_name = user_name_surname if user_name_surname else user_email.split('@')[0] if user_email else 'Unknown Seller'
+            
+            product_dict = {
+                'id': product_id,
+                'name': name,
+                'description': description,
+                'image_url': image_url,
+                'categories': categories,
+                'price': float(price),
+                'seller': seller_name
+            }
+            
+            product_list.append(product_dict)
+            
+        return jsonify(product_list)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/')
+def home():
+    return jsonify({'message': 'AI Product Categorizer API is running!'})
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True) 
+    app.run(debug=True, host='0.0.0.0', port=8000) 
