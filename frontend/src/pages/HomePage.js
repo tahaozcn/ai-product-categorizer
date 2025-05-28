@@ -23,7 +23,7 @@ import {
     Flex,
     Image,
 } from '@chakra-ui/react';
-import { FaSearch, FaRocket, FaBrain, FaChartLine, FaUsers, FaShoppingCart, FaStore, FaRobot } from 'react-icons/fa';
+import { FaSearch, FaRocket, FaBrain, FaChartLine, FaUsers, FaShoppingCart, FaStore, FaRobot, FaCamera } from 'react-icons/fa';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 const categories = [
@@ -73,12 +73,26 @@ const HomePage = () => {
                             fontWeight="extrabold"
                             bgGradient="linear(to-r, white, purple.200)"
                             bgClip="text"
+                            lineHeight="1.3"
+                            letterSpacing="-0.01em"
+                            fontFamily="'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                            textAlign="center"
+                            display="block"
+                            py={2}
+                            css={{
+                                textRendering: 'optimizeLegibility',
+                                WebkitFontSmoothing: 'antialiased',
+                                MozOsxFontSmoothing: 'grayscale',
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                overflow: 'visible'
+                            }}
                         >
-                            Smart Marketplace
+                            <Text as="span" display="inline-block">AI Product Categorizer</Text>
                         </Heading>
                         <Text fontSize={{ base: 'xl', md: '2xl' }} maxW="3xl" opacity={0.9}>
-                            Discover products with intelligent categorization.
-                            Smart shopping meets modern selling.
+                            Upload your product photos and get instant AI-powered category suggestions.
+                            Save time on product listing with accurate categorization.
                         </Text>
 
                         {/* Smart Search Bar */}
@@ -123,9 +137,10 @@ const HomePage = () => {
                                 leftIcon={<FaShoppingCart />}
                                 _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
                                 borderRadius="full"
+                                border="2px solid white"
                                 px={8}
                             >
-                                Browse Marketplace
+                                Browse Products
                             </Button>
                             <Button
                                 as={RouterLink}
@@ -134,12 +149,13 @@ const HomePage = () => {
                                 variant="outline"
                                 color="white"
                                 borderColor="white"
+                                borderWidth="2px"
                                 leftIcon={<FaStore />}
                                 _hover={{ bg: 'whiteAlpha.200', transform: 'translateY(-2px)' }}
                                 borderRadius="full"
                                 px={8}
                             >
-                                Start Selling
+                                Start Categorizing
                             </Button>
                         </HStack>
                     </VStack>
@@ -152,11 +168,11 @@ const HomePage = () => {
                     <VStack spacing={16}>
                         <VStack spacing={4} textAlign="center">
                             <Heading size="2xl" color="gray.800">
-                                Platform Features
+                                How It Works
                             </Heading>
                             <Text fontSize="xl" color="gray.600" maxW="3xl">
-                                Our technology automatically categorizes products, enhances search results,
-                                and provides intelligent recommendations for both buyers and sellers.
+                                Our AI analyzes your product images and suggests the most accurate categories.
+                                Perfect for sellers who want to quickly categorize their products without guesswork.
                             </Text>
                         </VStack>
 
@@ -210,61 +226,16 @@ const HomePage = () => {
                                 transition="all 0.3s"
                             >
                                 <CardBody p={8} textAlign="center">
-                                    <Icon as={FaChartLine} boxSize={16} color="blue.500" mb={4} />
+                                    <Icon as={FaCamera} boxSize={16} color="gray.800" mb={4} />
                                     <Heading size="lg" mb={4} color="gray.800">
-                                        Analytics Insights
+                                        Instant Photo Capture
                                     </Heading>
                                     <Text color="gray.600" fontSize="lg">
-                                        Get insights about market trends, pricing recommendations,
-                                        and category performance analytics.
+                                        Upload product photos instantly with our camera capture feature
+                                        or choose from your device gallery for quick and easy listing.
                                     </Text>
                                 </CardBody>
                             </Card>
-                        </SimpleGrid>
-                    </VStack>
-                </Container>
-            </Box>
-
-            {/* Stats Section */}
-            <Box py={20} bg="white">
-                <Container maxW="4xl">
-                    <VStack spacing={12}>
-                        <Heading size="2xl" textAlign="center" color="gray.800">
-                            Platform Statistics
-                        </Heading>
-                        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={8} w="full">
-                            <Stat textAlign="center">
-                                <StatNumber fontSize="4xl" fontWeight="bold" color="indigo.600">
-                                    100+
-                                </StatNumber>
-                                <StatLabel fontSize="lg" color="gray.600">
-                                    Categories
-                                </StatLabel>
-                            </Stat>
-                            <Stat textAlign="center">
-                                <StatNumber fontSize="4xl" fontWeight="bold" color="emerald.600">
-                                    99%
-                                </StatNumber>
-                                <StatLabel fontSize="lg" color="gray.600">
-                                    Accuracy Rate
-                                </StatLabel>
-                            </Stat>
-                            <Stat textAlign="center">
-                                <StatNumber fontSize="4xl" fontWeight="bold" color="blue.600">
-                                    {"<2s"}
-                                </StatNumber>
-                                <StatLabel fontSize="lg" color="gray.600">
-                                    Processing Time
-                                </StatLabel>
-                            </Stat>
-                            <Stat textAlign="center">
-                                <StatNumber fontSize="4xl" fontWeight="bold" color="purple.600">
-                                    24/7
-                                </StatNumber>
-                                <StatLabel fontSize="lg" color="gray.600">
-                                    Available
-                                </StatLabel>
-                            </Stat>
                         </SimpleGrid>
                     </VStack>
                 </Container>
@@ -275,11 +246,11 @@ const HomePage = () => {
                 <Container maxW="4xl">
                     <VStack spacing={8} textAlign="center">
                         <Heading size="2xl" fontWeight="bold">
-                            Ready to Experience Smart Commerce?
+                            Ready to Try AI Product Categorization?
                         </Heading>
                         <Text fontSize="xl" maxW="2xl" opacity={0.9}>
-                            Join thousands of sellers and buyers who are already benefiting from
-                            our intelligent marketplace platform.
+                            Upload a product photo and see how our AI categorizes it.
+                            Free to try - perfect for sellers who want accurate product categorization.
                         </Text>
                         <HStack spacing={6} flexWrap="wrap" justify="center">
                             <Button
@@ -292,11 +263,12 @@ const HomePage = () => {
                                 leftIcon={<FaRocket />}
                                 _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
                                 borderRadius="full"
+                                border="2px solid white"
                                 px={10}
                                 py={6}
                                 fontSize="lg"
                             >
-                                Get Started Now
+                                Try Categorization
                             </Button>
                             <Button
                                 as={RouterLink}
@@ -308,11 +280,12 @@ const HomePage = () => {
                                 leftIcon={<FaUsers />}
                                 _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
                                 borderRadius="full"
+                                border="2px solid white"
                                 px={10}
                                 py={6}
                                 fontSize="lg"
                             >
-                                Explore Products
+                                Browse Products
                             </Button>
                         </HStack>
                     </VStack>

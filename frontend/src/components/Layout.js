@@ -1,15 +1,18 @@
 import React from 'react';
 import { Box, Flex, HStack, Spacer, Button, Text, Link, Icon, Container, VStack } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
-import { FaShoppingBag } from 'react-icons/fa';
+import { FaRobot, FaCubes } from 'react-icons/fa';
 
 const Navbar = () => (
     <Box as="header" bg="white" boxShadow="sm" py={2} px={0}>
         <Container maxW="container.xl">
             <Flex align="center">
                 <HStack spacing={2}>
-                    <Icon as={FaShoppingBag} color="purple.600" boxSize={6} />
-                    <Text fontWeight="bold" fontSize="xl" color="purple.700">AI Commerce</Text>
+                    <Box position="relative">
+                        <Icon as={FaCubes} color="purple.600" boxSize={6} />
+                        <Icon as={FaRobot} color="indigo.500" boxSize={3} position="absolute" top="-1" right="-1" />
+                    </Box>
+                    <Text fontWeight="bold" fontSize="xl" color="purple.700">AI Product Categorizer</Text>
                 </HStack>
                 <HStack spacing={8} ml={10} as="nav" fontWeight="medium">
                     <Link as={RouterLink} to="/" color="gray.700" _hover={{ color: 'purple.600' }}>Home</Link>
@@ -31,10 +34,13 @@ const Footer = () => (
             <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align="flex-start" gap={8}>
                 <Box mb={{ base: 8, md: 0 }}>
                     <HStack spacing={2} mb={2}>
-                        <Icon as={FaShoppingBag} color="white" boxSize={6} />
-                        <Text fontWeight="bold" fontSize="lg">AI Commerce</Text>
+                        <Box position="relative">
+                            <Icon as={FaCubes} color="white" boxSize={6} />
+                            <Icon as={FaRobot} color="purple.300" boxSize={3} position="absolute" top="-1" right="-1" />
+                        </Box>
+                        <Text fontWeight="bold" fontSize="lg">AI Product Categorizer</Text>
                     </HStack>
-                    <Text maxW="300px" color="gray.300">Revolutionizing e-commerce with AI-powered categorization for sellers and intuitive shopping for customers.</Text>
+                    <Text maxW="300px" color="gray.300">Revolutionizing e-commerce with AI-powered product categorization for sellers and intuitive shopping experience for customers.</Text>
                 </Box>
                 <HStack spacing={16} align="flex-start">
                     <Box>
@@ -61,12 +67,12 @@ const Footer = () => (
                         <VStack align="start" spacing={1} color="gray.300">
                             <Text>123 E-Commerce St, San Francisco, CA 94103, USA</Text>
                             <Text>+1 (234) 567-890</Text>
-                            <Text>info@aicommerce.com</Text>
+                            <Text>info@aiproductcategorizer.com</Text>
                         </VStack>
                     </Box>
                 </HStack>
             </Flex>
-            <Text mt={10} textAlign="center" color="gray.500" fontSize="sm">© 2025 AI Commerce. All rights reserved.</Text>
+            <Text mt={10} textAlign="center" color="gray.500" fontSize="sm">© 2025 AI Product Categorizer. All rights reserved.</Text>
         </Container>
     </Box>
 );

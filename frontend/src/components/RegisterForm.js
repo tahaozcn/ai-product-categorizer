@@ -116,14 +116,14 @@ const RegisterForm = () => {
             <Box bg="white" borderRadius="md" p={2} display="flex" alignItems="center" justifyContent="center">
               <FaBoxOpen color="#6B46C1" size={32} />
             </Box>
-            <Heading size="lg" fontWeight="bold">AI Commerce</Heading>
+            <Heading size="lg" fontWeight="bold">AI Product Categorizer</Heading>
           </HStack>
           <Box mt={24} mb={8}>
             <Heading size="2xl" fontWeight="extrabold" mb={4}>Join our marketplace</Heading>
             <Text fontSize="lg" opacity={0.9} maxW="400px">Create an account to start selling products with automatic AI categorization or shop from our selection of unique items.</Text>
           </Box>
         </Box>
-        <Text fontSize="sm" opacity={0.7}>&copy; 2025 AI Commerce. All rights reserved.</Text>
+        <Text fontSize="sm" opacity={0.7}>&copy; 2025 AI Product Categorizer. All rights reserved.</Text>
       </Box>
       {/* Sağ Panel */}
       <Flex flex={1} align="center" justify="center" bg="gray.50" minH="100vh">
