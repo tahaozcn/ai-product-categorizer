@@ -73,6 +73,7 @@ const SellerDashboard = () => {
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [aiLoading, setAiLoading] = useState(false);
+    const [descriptionLoading, setDescriptionLoading] = useState(false);
     const [step, setStep] = useState(1); // 1: Upload, 2: AI Analysis, 3: Details, 4: Final
 
     // Camera related states
@@ -294,6 +295,77 @@ const SellerDashboard = () => {
             });
         } finally {
             setAiLoading(false);
+        }
+    };
+
+    // Generate AI description function
+    const handleGenerateDescription = async () => {
+        if (selectedCategories.length === 0) {
+            toast({
+                title: 'Select Categories First',
+                description: 'Please use "Get AI Categories" button to detect product categories first.',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        if (!name || name.trim() === '') {
+            toast({
+                title: 'Product Name Required',
+                description: 'Please enter a product name before generating description.',
+                status: 'warning',
+                duration: 3000,
+                isClosable: true,
+            });
+            return;
+        }
+
+        setDescriptionLoading(true);
+        try {
+            // Prepare request data with image if available
+            let requestData = {
+                categories: selectedCategories.map(cat => ({ name: cat })),
+                product_name: name.trim()
+            };
+
+            // If we have an image, send it for vision analysis
+            if (image) {
+                // Convert image to base64 for vision models
+                const reader = new FileReader();
+                const imageDataPromise = new Promise((resolve) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(image);
+                });
+
+                const imageData = await imageDataPromise;
+                requestData.image_data = imageData;
+            }
+
+            const response = await axios.post('http://localhost:8000/api/generate-description', requestData);
+
+            if (response.data.description) {
+                setDescription(response.data.description);
+                toast({
+                    title: 'Description Generated!',
+                    description: 'AI has analyzed your product image and generated a professional description.',
+                    status: 'success',
+                    duration: 4000,
+                    isClosable: true,
+                });
+            }
+        } catch (error) {
+            console.error('Error generating description:', error);
+            toast({
+                title: 'Description Generation Failed',
+                description: 'Could not generate AI description. Please try again or write manually.',
+                status: 'error',
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            setDescriptionLoading(false);
         }
     };
 
@@ -556,14 +628,40 @@ const SellerDashboard = () => {
                                             </FormControl>
                                         </SimpleGrid>
 
+                                        {/* Description */}
                                         <FormControl isRequired>
                                             <FormLabel>Description</FormLabel>
-                                            <Textarea
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                                placeholder="Describe your product..."
-                                                rows={4}
-                                            />
+                                            <VStack spacing={2} align="stretch">
+                                                <HStack>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="green"
+                                                        leftIcon={<Icon as={FaMagic} />}
+                                                        onClick={handleGenerateDescription}
+                                                        isLoading={descriptionLoading}
+                                                        loadingText="Generating..."
+                                                        isDisabled={selectedCategories.length === 0 || !name || name.trim() === ''}
+                                                    >
+                                                        Generate AI Description
+                                                    </Button>
+                                                    <Text fontSize="sm" color="gray.500">
+                                                        {selectedCategories.length === 0 && (!name || name.trim() === '') ?
+                                                            'Enter product name and select categories first' :
+                                                            selectedCategories.length === 0 ?
+                                                                'Select categories first' :
+                                                                (!name || name.trim() === '') ?
+                                                                    'Enter product name first' :
+                                                                    'Click to generate AI description'
+                                                        }
+                                                    </Text>
+                                                </HStack>
+                                                <Textarea
+                                                    value={description}
+                                                    onChange={(e) => setDescription(e.target.value)}
+                                                    placeholder="Describe your product... or click 'Generate AI Description' button above"
+                                                    rows={4}
+                                                />
+                                            </VStack>
                                         </FormControl>
 
                                         {/* Manual Categories */}

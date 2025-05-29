@@ -251,7 +251,7 @@ This project demonstrates:
 - Multi-language support
 - Social features and wishlists
 
-## �� Contributing
+## 🎯 Contributing
 
 This project demonstrates modern development practices and serves as a learning resource for full-stack development with AI integration.
 

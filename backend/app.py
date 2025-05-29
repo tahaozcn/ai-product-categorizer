@@ -13,6 +13,13 @@ import datetime
 from functools import wraps
 import json
 import bcrypt
+from dotenv import load_dotenv
+import base64
+from io import BytesIO
+import google.generativeai as genai
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins="*")
@@ -32,6 +39,9 @@ _processor = None
 # JWT config
 app.config['SECRET_KEY'] = 'your-secret-key-here'  # In production, use environment variable
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=1)
+
+# Google Gemini Configuration
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 
 # Database setup
 def init_db():
@@ -941,6 +951,412 @@ def get_all_products():
 @app.route('/')
 def home():
     return jsonify({'message': 'AI Product Categorizer API is running!'})
+
+def extract_info_from_product_name(product_name):
+    """Extract useful information from product name"""
+    name_lower = product_name.lower()
+    
+    # Extract brand if mentioned
+    brands = ['apple', 'samsung', 'nike', 'adidas', 'sony', 'lg', 'hp', 'dell', 'canon', 'nikon']
+    brand = next((b for b in brands if b in name_lower), None)
+    
+    # Extract colors
+    colors = ['black', 'white', 'red', 'blue', 'green', 'yellow', 'pink', 'purple', 'gray', 'grey', 'silver', 'gold']
+    color = next((c for c in colors if c in name_lower), None)
+    
+    # Extract sizes
+    sizes = ['xs', 'small', 'medium', 'large', 'xl', 'xxl', '32gb', '64gb', '128gb', '256gb', '512gb', '1tb']
+    size = next((s for s in sizes if s in name_lower), None)
+    
+    # Extract materials
+    materials = ['cotton', 'silk', 'leather', 'plastic', 'metal', 'wood', 'glass', 'ceramic']
+    material = next((m for m in materials if m in name_lower), None)
+    
+    return {
+        'brand': brand,
+        'color': color, 
+        'size': size,
+        'material': material,
+        'original_name': product_name
+    }
+
+def generate_product_description_with_name_and_image(product_name, category_names, image_path=None):
+    """Generate description with optional image analysis using Gemini Vision"""
+    print(f"Generating description with image path: {image_path}")
+    print(f"GEMINI_API_KEY available: {bool(GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here')}")
+    
+    # Extract info from product name
+    name_info = extract_info_from_product_name(product_name)
+    print(f"Name info extracted: {name_info}")
+    
+    # Try Gemini Vision if image is available
+    if image_path and os.path.exists(image_path):
+        print(f"Image exists at: {image_path}")
+        
+        if GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here':
+            try:
+                print("Attempting Gemini Vision...")
+                return generate_description_with_gemini_vision(image_path, product_name, category_names)
+            except Exception as e:
+                print(f"Gemini Vision failed: {e}")
+    else:
+        print(f"No image available or image doesn't exist. Path: {image_path}")
+    
+    # If no vision models available or failed, return a basic description
+    return create_basic_description(product_name, category_names, name_info)
+
+def create_basic_description(product_name, category_names, name_info):
+    """Create a basic description when no vision models are available"""
+    main_category = category_names[0] if category_names else 'product'
+    features_text = ', '.join(category_names[:3])
+    
+    # Enhanced description templates based on category
+    category_templates = {
+        'electronics': "cutting-edge technology and premium build quality",
+        'fashion': "stylish design and comfortable wear",
+        'home': "functional elegance and lasting durability", 
+        'beauty': "premium ingredients and proven effectiveness",
+        'sports': "high performance and reliable construction",
+        'health': "quality assurance and trusted reliability",
+        'toys': "safe materials and engaging design",
+        'books': "valuable knowledge and engaging content",
+        'automotive': "reliable performance and quality engineering",
+        'pet': "safe ingredients and pet-friendly design"
+    }
+    
+    # Determine category type
+    category_lower = main_category.lower()
+    category_description = "excellent quality and reliable performance"
+    
+    for key, desc in category_templates.items():
+        if key in category_lower:
+            category_description = desc
+            break
+    
+    # Start building description
+    description_parts = []
+    
+    # Introduction with brand if available
+    if name_info['brand']:
+        description_parts.append(f"Experience the quality of {name_info['brand'].title()} with the {product_name}")
+    else:
+        description_parts.append(f"Discover the {product_name}")
+    
+    # Add category and features
+    description_parts.append(f"featuring {category_description}")
+    
+    # Add specific details if available
+    details = []
+    if name_info['color']:
+        details.append(f"elegant {name_info['color']} finish")
+    if name_info['material']:
+        details.append(f"premium {name_info['material']} construction")
+    if name_info['size']:
+        details.append(f"{name_info['size']} capacity")
+    
+    if details:
+        description_parts.append(f"with {', '.join(details)}")
+    
+    # Add category-specific benefits
+    if features_text and len(category_names) > 1:
+        description_parts.append(f"Perfect for {features_text.lower()}")
+    
+    # Add closing statement
+    description_parts.append("ensuring exceptional value and satisfaction for discerning customers.")
+    
+    # Join all parts
+    description = ". ".join(description_parts).replace(".. ", ". ")
+    
+    # Ensure proper sentence structure
+    if not description.endswith('.'):
+        description += '.'
+    
+    return description
+
+@app.route('/api/generate-description', methods=['POST'])
+def generate_description_endpoint():
+    """Separate endpoint for generating product descriptions"""
+    print("\n=== Starting Description Generation Request ===")
+    
+    try:
+        data = request.get_json()
+        categories = data.get('categories', [])
+        product_name = data.get('product_name', '').strip()
+        image_data = data.get('image_data', '')
+        
+        print(f"Product Name: {product_name}")
+        print(f"Categories: {categories}")
+        print(f"Image data provided: {bool(image_data)}")
+        
+        if not categories:
+            print("Error: No categories provided")
+            return jsonify({'error': 'No categories provided'}), 400
+            
+        if not product_name:
+            print("Error: No product name provided")
+            return jsonify({'error': 'Product name is required'}), 400
+        
+        # Extract category names
+        category_names = []
+        for cat in categories:
+            if isinstance(cat, dict):
+                category_names.append(cat.get('name', '').split(' - ')[-1])
+            else:
+                category_names.append(str(cat).split(' - ')[-1])
+        
+        print(f"Extracted category names: {category_names}")
+        
+        # Try Gemini Vision if image is provided and API key is available
+        description = None
+        vision_analysis_used = False
+        
+        if image_data and GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here':
+            try:
+                print("Attempting Gemini Vision...")
+                description = try_gemini_vision(image_data, product_name, category_names)
+                if description:
+                    vision_analysis_used = True
+                    print("Success: Generated description with Gemini Vision")
+            except Exception as e:
+                print(f"Gemini Vision failed: {str(e)}")
+                description = None
+        
+        # If Gemini didn't work, use enhanced basic description
+        if not description:
+            print("Using enhanced basic description generation...")
+            description = create_basic_description(product_name, category_names, extract_info_from_product_name(product_name))
+        
+        print(f"Generated description: {description[:100]}...")
+        
+        print("\n=== Description Generation Completed ===")
+        return jsonify({
+            'description': description,
+            'categories_used': category_names,
+            'product_name_used': product_name,
+            'vision_analysis_used': vision_analysis_used
+        })
+        
+    except Exception as e:
+        print(f"\n!!! Error in generate_description_endpoint !!!")
+        print(f"Error details: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+def try_gemini_vision(image_data, product_name, category_names):
+    """Simple Gemini Vision function with minimal error handling"""
+    try:
+        # Configure Gemini
+        genai.configure(api_key=GEMINI_API_KEY)
+        
+        # Try different model names (updated for current API)
+        model = None
+        model_names = [
+            'gemini-1.5-flash',
+            'gemini-1.5-pro', 
+            'models/gemini-1.5-flash',
+            'models/gemini-1.5-pro'
+        ]
+        
+        for model_name in model_names:
+            try:
+                model = genai.GenerativeModel(model_name)
+                print(f"Successfully initialized model: {model_name}")
+                break
+            except Exception as e:
+                print(f"Failed to initialize {model_name}: {str(e)}")
+                continue
+        
+        if not model:
+            raise Exception("Could not initialize any Gemini model")
+        
+        # Process image data
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        image_bytes = base64.b64decode(image_data)
+        
+        # Save temporarily
+        timestamp = str(int(time.time() * 1000))
+        temp_filename = f"temp_gemini_{timestamp}.jpg"
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], temp_filename)
+        
+        with open(image_path, 'wb') as f:
+            f.write(image_bytes)
+        
+        # Load image
+        img = Image.open(image_path)
+        
+        # Create a simple but effective prompt
+        categories_text = ', '.join(category_names)
+        prompt = f"""Look at this product image and create a professional product description.
+
+Product Name: {product_name}
+Categories: {categories_text}
+
+Write a compelling 60-80 word description that includes:
+- What you see in the image (colors, materials, design)
+- Key features and benefits
+- Professional e-commerce language
+
+Description:"""
+
+        # Generate content
+        response = model.generate_content([prompt, img])
+        
+        # Clean up temp file
+        try:
+            os.remove(image_path)
+        except:
+            pass
+        
+        if response and response.text:
+            return response.text.strip()
+        else:
+            raise Exception("Empty response from Gemini")
+            
+    except Exception as e:
+        print(f"Gemini Vision error: {str(e)}")
+        raise e
+
+@app.route('/api/test-gemini', methods=['GET'])
+@app.route('/api/test', methods=['GET'])  # Alternative URL
+def test_gemini_api():
+    """Test if Gemini API is configured correctly"""
+    print("\n=== Starting Gemini API Test ===")
+    try:
+        # Check if API key is configured
+        if not GEMINI_API_KEY or GEMINI_API_KEY == 'your_gemini_api_key_here':
+            print("Error: Gemini API key not configured")
+            return jsonify({
+                'status': 'error',
+                'message': 'Gemini API key not configured',
+                'key_status': 'missing or default',
+                'key_value': 'not set or default value'
+            }), 400
+            
+        print(f"API Key configured (first 10 chars): {GEMINI_API_KEY[:10]}...")
+            
+        # Configure Gemini
+        print("Configuring Gemini API...")
+        genai.configure(api_key=GEMINI_API_KEY)
+        print("Gemini API configured")
+        
+        # Try current model names
+        model = None
+        error_messages = []
+        model_names = [
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+            'models/gemini-1.5-flash', 
+            'models/gemini-1.5-pro'
+        ]
+        
+        print("Attempting to initialize model...")
+        for model_name in model_names:
+            try:
+                print(f"Trying '{model_name}'...")
+                model = genai.GenerativeModel(model_name)
+                print(f"Successfully initialized '{model_name}'")
+                break
+            except Exception as e:
+                error_messages.append(f"Error with {model_name}: {str(e)}")
+                print(f"Error with {model_name}: {str(e)}")
+                continue
+        
+        if not model:
+            print("Error: No model was successfully initialized")
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to initialize any Gemini model',
+                'error_details': error_messages
+            }), 500
+        
+        # Try a simple prompt
+        print("Sending test prompt...")
+        response = model.generate_content("Hello! Can you confirm that you're working properly?")
+        print("Received response from model")
+        
+        if not response or not response.text:
+            print("Error: Empty response from model")
+            return jsonify({
+                'status': 'error',
+                'message': 'Model returned empty response',
+                'error_details': 'No text in response'
+            }), 500
+        
+        print("Test completed successfully")
+        return jsonify({
+            'status': 'success',
+            'message': 'Gemini API is working correctly',
+            'response': response.text,
+            'key_status': 'configured',
+            'model_used': model.model_name
+        })
+        
+    except Exception as e:
+        print(f"Gemini API test error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'Gemini API test failed: {str(e)}',
+            'key_status': 'error',
+            'error_details': traceback.format_exc()
+        }), 500
+
+# Add a simple health check endpoint
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Simple health check endpoint"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Server is running'
+    })
+
+@app.route('/api/list-gemini-models', methods=['GET'])
+def list_gemini_models():
+    """List available Gemini models"""
+    try:
+        if not GEMINI_API_KEY or GEMINI_API_KEY == 'your_gemini_api_key_here':
+            return jsonify({
+                'status': 'error',
+                'message': 'Gemini API key not configured',
+                'key_status': 'missing or default'
+            }), 400
+            
+        # Configure Gemini
+        genai.configure(api_key=GEMINI_API_KEY)
+        
+        # List available models
+        models = genai.list_models()
+        available_models = []
+        
+        for model in models:
+            model_info = {
+                'name': model.name,
+                'display_name': model.display_name,
+                'description': model.description,
+                'supported_generation_methods': [
+                    method for method in model.supported_generation_methods
+                ]
+            }
+            available_models.append(model_info)
+        
+        return jsonify({
+            'status': 'success',
+            'models': available_models
+        })
+        
+    except Exception as e:
+        print(f"Error listing Gemini models: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'Failed to list Gemini models: {str(e)}',
+            'error_details': traceback.format_exc()
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000) 
