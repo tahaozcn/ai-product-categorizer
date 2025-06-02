@@ -16,7 +16,7 @@
 - **Visual Product Recognition** from uploaded images
 - **Instant Camera Capture** with real-time photo processing
 - **Smart Category Suggestions** with confidence scoring
-- **AI-Generated Descriptions** using Google Gemini Vision
+- **Intelligent Product Descriptions** - automatically generates professional product descriptions from images using advanced AI vision models
 
 ### 🛍️ E-commerce Functionality
 - **User Authentication** (Customer & Seller roles)
@@ -46,7 +46,7 @@
 - **Python Flask** - Web framework
 - **SQLite** - Database
 - **OpenAI CLIP** - AI model for image classification
-- **Google Gemini Vision** - AI description generation
+- **Google Gemini Vision** - Advanced AI for product description generation
 - **PIL (Pillow)** - Image processing
 - **Flask-CORS** - Cross-origin resource sharing
 - **PyTorch** - Deep learning framework
@@ -59,7 +59,7 @@
 ## 📁 Project Structure
 
 ```
-AIProductCategorizer2/
+AIProductCategorizer/
 ├── 📁 frontend/                 # React frontend application
 │   ├── src/
 │   │   ├── components/         # Reusable UI components
@@ -92,8 +92,8 @@ AIProductCategorizer2/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/AIProductCategorizer2.git
-   cd AIProductCategorizer2
+   git clone https://github.com/yourusername/AIProductCategorizer.git
+   cd AIProductCategorizer
    ```
 
 2. **Backend Setup**
@@ -177,7 +177,7 @@ AIProductCategorizer2/
 ### For Sellers 🏪
 - Upload products with automatic AI categorization
 - **Camera capture** for instant photo upload
-- AI-generated product descriptions
+- Smart product description generation from images
 - Manage product inventory and pricing
 - View sales and product performance
 
@@ -186,7 +186,7 @@ AIProductCategorizer2/
 - **Camera Capture**: Take photos directly with device camera
 - **Category Prediction**: AI suggests the most appropriate categories
 - **Confidence Scores**: Shows how confident the AI is about each category
-- **Description Generation**: AI creates professional product descriptions
+- **Smart Descriptions**: AI analyzes product images and generates detailed, professional descriptions automatically
 
 ## 📊 Supported Categories
 
@@ -271,7 +271,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **AI Product Categorizer**
 - Full-stack e-commerce platform
-- AI-powered product categorization
+- AI-powered product categorization and description generation
 - Modern web development implementation
 
 ---
@@ -315,7 +315,7 @@ The platform is fully responsive and optimized for:
 
 **Taha** - [LinkedIn](https://linkedin.com/in/yourprofile) - tahaemail@example.com
 
-Project Link: [https://github.com/yourusername/AIProductCategorizer2](https://github.com/yourusername/AIProductCategorizer2)
+Project Link: [https://github.com/yourusername/AIProductCategorizer](https://github.com/yourusername/AIProductCategorizer)
 
 ---
 
