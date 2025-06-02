@@ -220,40 +220,44 @@ const SellerDashboard = () => {
             // Simulate AI processing time for better UX
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            console.log('Sending request to categorize endpoint...');
             const res = await axios.post('http://localhost:8000/api/categorize', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            console.log('Backend response:', res.data);
-
             // Extract category data with confidence scores
             const categoryResults = res.data.categories || [];
-            console.log('Category results:', categoryResults);
 
-            // Keep both name and confidence for display
+            // Normalize category data format
             const categoryData = categoryResults.map(cat => {
-                if (typeof cat === 'string') {
-                    return { name: cat, confidence: 0.5 };
-                } else if (cat.name && cat.confidence !== undefined) {
-                    return { name: cat.name, confidence: cat.confidence };
-                } else {
+                // Backend'den gelen format: {name: "...", confidence: ...}
+                if (typeof cat === 'object' && cat.name !== undefined) {
+                    return {
+                        name: cat.name,
+                        confidence: cat.confidence || 0.5
+                    };
+                }
+                // String formatında gelirse
+                else if (typeof cat === 'string') {
                     return { name: cat, confidence: 0.5 };
                 }
+                // Eski format için backward compatibility
+                else if (cat.main_category) {
+                    return { name: cat.main_category, confidence: cat.confidence || 0.5 };
+                }
+                // Fallback
+                else {
+                    return { name: String(cat), confidence: 0.5 };
+                }
             });
-
-            console.log('Processed category data:', categoryData);
 
             // If no categories received, use fallback categories
             let finalCategories = categoryData;
             if (finalCategories.length === 0) {
-                console.log('No AI categories received, using fallback categories');
                 finalCategories = [
-                    { name: 'Fashion & Clothing - Accessories', confidence: 0.85 },
-                    { name: 'Electronics - Smartphones & Tablets', confidence: 0.72 },
-                    { name: 'Home & Furniture - Home Decor', confidence: 0.68 },
-                    { name: 'Beauty & Personal Care - Skincare', confidence: 0.55 },
-                    { name: 'Sports & Outdoors - Exercise Equipment', confidence: 0.45 }
+                    { name: 'Fashion & Clothing', confidence: 0.75 },
+                    { name: 'Electronics', confidence: 0.70 },
+                    { name: 'Home & Furniture', confidence: 0.65 },
+                    { name: 'Beauty & Personal Care', confidence: 0.60 }
                 ];
 
                 toast({
@@ -277,11 +281,10 @@ const SellerDashboard = () => {
 
             // Fallback to demo categories on error
             const fallbackCategories = [
-                { name: 'General - Product', confidence: 0.65 },
-                { name: 'Fashion & Clothing - Accessories', confidence: 0.58 },
-                { name: 'Electronics - General Device', confidence: 0.52 },
-                { name: 'Home & Furniture - Household Item', confidence: 0.48 },
-                { name: 'Beauty & Personal Care - General', confidence: 0.42 }
+                { name: 'Fashion & Clothing', confidence: 0.65 },
+                { name: 'Electronics', confidence: 0.60 },
+                { name: 'Home & Furniture', confidence: 0.55 },
+                { name: 'Beauty & Personal Care', confidence: 0.50 }
             ];
 
             setAiCategories(fallbackCategories);

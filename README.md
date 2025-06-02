@@ -4,13 +4,19 @@
 
 **AI Product Categorizer** is a modern e-commerce platform that leverages artificial intelligence for automatic product categorization using CLIP (Contrastive Language-Image Pre-Training) technology. This graduation project demonstrates the integration of AI capabilities with a full-stack web application, showcasing modern development practices and industry-standard technologies.
 
+[![Made with React](https://img.shields.io/badge/Made%20with-React-61dafb?style=for-the-badge&logo=react)](https://reactjs.org/)
+[![Python Flask](https://img.shields.io/badge/Backend-Flask-000000?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
+[![AI Powered](https://img.shields.io/badge/AI%20Powered-CLIP-ff6b6b?style=for-the-badge&logo=openai)](https://openai.com/clip/)
+[![Chakra UI](https://img.shields.io/badge/UI-Chakra%20UI-319795?style=for-the-badge&logo=chakraui)](https://chakra-ui.com/)
+
 ## ✨ Key Features
 
 ### 🤖 AI-Powered Features
 - **Automatic Product Categorization** using OpenAI's CLIP model
 - **Visual Product Recognition** from uploaded images
-- **Smart Search** with semantic understanding
-- **Confidence Scoring** for categorization accuracy
+- **Instant Camera Capture** with real-time photo processing
+- **Smart Category Suggestions** with confidence scoring
+- **AI-Generated Descriptions** using Google Gemini Vision
 
 ### 🛍️ E-commerce Functionality
 - **User Authentication** (Customer & Seller roles)
@@ -40,6 +46,7 @@
 - **Python Flask** - Web framework
 - **SQLite** - Database
 - **OpenAI CLIP** - AI model for image classification
+- **Google Gemini Vision** - AI description generation
 - **PIL (Pillow)** - Image processing
 - **Flask-CORS** - Cross-origin resource sharing
 - **PyTorch** - Deep learning framework
@@ -85,7 +92,7 @@ AIProductCategorizer2/
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/AIProductCategorizer2.git
    cd AIProductCategorizer2
    ```
 
@@ -125,7 +132,7 @@ AIProductCategorizer2/
    ```
 
 4. **Access the application**
-   - **Frontend**: http://localhost:4001 (React app)
+   - **Frontend**: http://localhost:3000 (React app)
    - **Backend API**: http://localhost:8000 (Flask API)
 
 ### 🍎 macOS Specific Notes
@@ -169,16 +176,17 @@ AIProductCategorizer2/
 
 ### For Sellers 🏪
 - Upload products with automatic AI categorization
+- **Camera capture** for instant photo upload
+- AI-generated product descriptions
 - Manage product inventory and pricing
 - View sales and product performance
-- Edit product details and images
-- Access platform seller tools
 
 ### AI Features 🤖
 - **Image Upload**: Upload product images for automatic categorization
+- **Camera Capture**: Take photos directly with device camera
 - **Category Prediction**: AI suggests the most appropriate categories
 - **Confidence Scores**: Shows how confident the AI is about each category
-- **Smart Filtering**: Enhanced search and filtering capabilities
+- **Description Generation**: AI creates professional product descriptions
 
 ## 📊 Supported Categories
 
@@ -257,7 +265,7 @@ This project demonstrates modern development practices and serves as a learning 
 
 ## 📄 License
 
-This project is created for educational and demonstration purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
@@ -278,4 +286,37 @@ This project is created for educational and demonstration purposes.
 
 ---
 
-*This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.* 
+*This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.*
+
+## 📱 Mobile Support
+
+The platform is fully responsive and optimized for:
+- 📱 **Mobile phones** (iOS/Android)
+- 📱 **Tablets** (iPad/Android tablets)
+- 💻 **Desktop browsers** (Chrome, Firefox, Safari, Edge)
+- 🖥️ **Large screens** (4K monitors)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 🙏 Acknowledgments
+
+- **OpenAI** for CLIP model
+- **Google** for Gemini Vision API
+- **Chakra UI** for beautiful components
+- **React** community for ecosystem
+
+## 📞 Contact
+
+**Taha** - [LinkedIn](https://linkedin.com/in/yourprofile) - tahaemail@example.com
+
+Project Link: [https://github.com/yourusername/AIProductCategorizer2](https://github.com/yourusername/AIProductCategorizer2)
+
+---
+
+⭐ **Star this repository if you found it helpful!** ⭐ 

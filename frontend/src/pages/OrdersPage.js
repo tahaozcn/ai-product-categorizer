@@ -163,10 +163,8 @@ const OrderItem = ({ order }) => {
                                         <Image
                                             src={`http://localhost:8000${item.image_url}`}
                                             alt={item.name}
-                                            boxSize="60px"
-                                            objectFit="cover"
                                             borderRadius="md"
-                                            fallbackSrc="https://via.placeholder.com/60x60?text=No+Image"
+                                            fallbackSrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+"
                                         />
                                         <VStack align="start" flex={1} spacing={1}>
                                             <Text fontWeight="bold" fontSize="sm" noOfLines={1}>

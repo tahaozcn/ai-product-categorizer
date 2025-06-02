@@ -270,101 +270,88 @@ def generate_prompts(category_data):
     return prompts, categories
 
 def analyze_image(image_path):
-    """Analyze an image and return the top categories using the CLIP model."""
+    """Analyze image with CLIP model and return category suggestions with confidence scores."""
     try:
-        print(f"Starting image analysis for: {image_path}")
-        
-        # Check if file exists
+        # Load image
         if not os.path.exists(image_path):
-            print(f"Error: Image file not found at {image_path}")
-            return None
-            
-        # Load and preprocess image
+            print(f"Image file not found: {image_path}")
+            return []
+
         image = Image.open(image_path).convert('RGB')
-        print(f"Image loaded successfully, size: {image.size}")
+        print(f"Image loaded successfully: {image.size}")
+
+        # Get model and processor (lazy loading)
+        try:
+            model = get_model()
+            processor = get_processor()
+            print("CLIP model and processor loaded successfully")
+        except Exception as e:
+            print(f"Error loading CLIP model: {str(e)}")
+            return []
+
+        # Sadece ana kategorileri kullan (daha az kategori için)
+        main_categories = list(PRODUCT_HIERARCHY.keys())
         
-        processor = get_processor()
-        model = get_model()
-        print("Model and processor loaded successfully")
+        # Basit prompts oluştur
+        prompts = []
+        for category in main_categories:
+            prompts.append(f"a product photo of {category.lower()} item")
+            prompts.append(f"this is a {category.lower()} product")
         
-        # Generate dynamic prompts
-        prompts, categories = generate_prompts(PRODUCT_HIERARCHY)
-        print(f"Generated {len(prompts)} prompts for {len(categories)} categories")
-        
-        # Process image with CLIP
-        inputs = processor(images=image, return_tensors="pt", padding=True)
+        print(f"Generated {len(prompts)} prompts for {len(main_categories)} main categories")
+
+        # Extract image features
+        inputs = processor(images=image, return_tensors="pt")
         image_features = model.get_image_features(**inputs)
-        print("Image features extracted")
-        
-        # Get text features for categories with improved prompts
+
+        # Extract text features for all prompts
         text_inputs = processor(text=prompts, return_tensors="pt", padding=True)
         text_features = model.get_text_features(**text_inputs)
-        print("Text features extracted")
-        
+
         # Calculate similarities
-        similarity = torch.nn.functional.cosine_similarity(
-            image_features.unsqueeze(1), 
-            text_features.unsqueeze(0), 
-            dim=2
-        ).squeeze()
-        print(f"Similarity calculation completed, shape: {similarity.shape}")
-        
-        # Take average score for each set of three prompts (main category, specific, English)
-        num_prompts_per_category = 3
-        confidence_threshold = 0.15  # Lowered threshold for more results
-        
-        # Calculate average for each category
-        averaged_similarity = similarity.view(-1, num_prompts_per_category).mean(dim=1)
-        print(f"Averaged similarity shape: {averaged_similarity.shape}")
-        
-        # Get top categories with confidence threshold
-        top_scores, top_indices = averaged_similarity.topk(min(10, len(averaged_similarity)))
-        print(f"Top scores: {top_scores}")
-        
-        # Filter results above threshold
+        similarity = torch.cosine_similarity(image_features, text_features)
+
+        # Group by main category (her ana kategori için 2 prompt var)
+        category_scores = {}
+        for i, category in enumerate(main_categories):
+            # Her kategori için 2 prompt olduğundan ortalama al
+            score1 = float(similarity[i * 2])
+            score2 = float(similarity[i * 2 + 1])
+            category_scores[category] = (score1 + score2) / 2
+
+        # Get top scoring categories with threshold
+        threshold = 0.22  # Biraz yüksek threshold
         results = []
-        seen_categories = set()  # Prevent duplicate categories
         
-        for score, idx in zip(top_scores, top_indices):
-            if score > confidence_threshold:
-                category = categories[idx * num_prompts_per_category]
-                if category not in seen_categories:
-                    results.append({
-                        "name": category,
-                        "confidence": float(score)
-                    })
-                    seen_categories.add(category)
-                    print(f"Added category: {category} with confidence: {float(score)}")
-        
-        # If no results above threshold, take top 3 anyway
-        if len(results) == 0:
-            print("No results above threshold, taking top 3...")
-            for i in range(min(3, len(top_scores))):
-                score = top_scores[i]
-                idx = top_indices[i]
-                category = categories[idx * num_prompts_per_category]
-                if category not in seen_categories:
-                    results.append({
-                        "name": category,
-                        "confidence": float(score)
-                    })
-                    seen_categories.add(category)
-                    print(f"Force added category: {category} with confidence: {float(score)}")
-        
-        # Sort by confidence and take top 5
-        results = sorted(results, key=lambda x: x["confidence"], reverse=True)[:5]
-        print(f"Final results: {results}")
-        
-        return {
-            "categories": results,
-            "image_url": f"/uploads/{os.path.basename(image_path)}"
-        }
-        
+        # Sort by similarity score
+        sorted_categories = sorted(category_scores.items(), key=lambda x: x[1], reverse=True)
+
+        for category, score in sorted_categories:
+            if score > threshold:
+                results.append({
+                    'name': category,
+                    'confidence': float(score)
+                })
+
+        # If no results above threshold, take top 3-4
+        if not results:
+            for category, score in sorted_categories[:4]:
+                results.append({
+                    'name': category,
+                    'confidence': float(score)
+                })
+        else:
+            # Maksimum 5 kategori göster
+            results = results[:5]
+
+        print(f"Analysis completed, found {len(results)} categories")
+        return results
+
     except Exception as e:
         print(f"Error in analyze_image: {str(e)}")
         import traceback
         traceback.print_exc()
-        return None
+        return []
 
 def allowed_file(filename):
     """Check if the file extension is allowed for upload."""
@@ -844,18 +831,12 @@ def get_profile():
 @app.route('/api/categorize', methods=['POST'])
 def categorize_image():
     try:
-        print("Received categorize request")
-        
         if 'image' not in request.files:
-            print("Error: No image in request files")
             return jsonify({'error': 'No image uploaded'}), 400
             
         file = request.files['image']
         if file.filename == '':
-            print("Error: Empty filename")
             return jsonify({'error': 'No selected file'}), 400
-            
-        print(f"Processing file: {file.filename}")
         
         # Save the file
         filename = secure_filename(file.filename)
@@ -864,7 +845,6 @@ def categorize_image():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         
         file.save(filepath)
-        print(f"File saved to: {filepath}")
         
         # Analyze the image
         results = analyze_image(filepath)
@@ -872,21 +852,15 @@ def categorize_image():
         # Clean up temporary file
         try:
             os.remove(filepath)
-            print(f"Temporary file removed: {filepath}")
         except:
-            print(f"Could not remove temporary file: {filepath}")
+            pass
         
-        if not results or not results.get('categories'):
-            print("Error: AI categorization failed - no results")
+        if not results:
             return jsonify({'error': 'AI categorization failed - could not analyze image'}), 500
             
-        print(f"Categorization successful: {results}")
-        return jsonify({'categories': results['categories']})
+        return jsonify({'categories': results})
         
     except Exception as e:
-        print(f"Error in categorize_image endpoint: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/api/all-products', methods=['GET', 'OPTIONS'])
