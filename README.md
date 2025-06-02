@@ -288,22 +288,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.*
 
-## 📱 Mobile Support
-
-The platform is fully responsive and optimized for:
-- 📱 **Mobile phones** (iOS/Android)
-- 📱 **Tablets** (iPad/Android tablets)
-- 💻 **Desktop browsers** (Chrome, Firefox, Safari, Edge)
-- 🖥️ **Large screens** (4K monitors)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## 🙏 Acknowledgments
 
 - **OpenAI** for CLIP model
@@ -311,12 +295,6 @@ The platform is fully responsive and optimized for:
 - **Chakra UI** for beautiful components
 - **React** community for ecosystem
 
-## 📞 Contact
-
-**Taha** - [LinkedIn](https://linkedin.com/in/yourprofile) - tahaemail@example.com
-
-Project Link: [https://github.com/yourusername/AIProductCategorizer](https://github.com/yourusername/AIProductCategorizer)
-
 ---
 
-⭐ **Star this repository if you found it helpful!** ⭐ 
+*This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.* 
