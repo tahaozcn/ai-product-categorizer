@@ -284,17 +284,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [📁 Frontend Source](frontend/) - React application code
 - [📁 Backend Source](backend/) - Flask API and AI integration
 
----
-
-*This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.*
-
 ## 🙏 Acknowledgments
 
 - **OpenAI** for CLIP model
 - **Google** for Gemini Vision API
 - **Chakra UI** for beautiful components
-- **React** community for ecosystem
-
----
-
-*This project demonstrates the practical integration of artificial intelligence with modern web development technologies to create a complete, functional e-commerce platform suitable for real-world deployment.* 
+- **React** community for ecosystem 
