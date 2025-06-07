@@ -88,7 +88,7 @@ AIProductCategorizer/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/AIProductCategorizer.git
+   git clone https://github.com/tahaozcn/AIProductCategorizer.git
    cd AIProductCategorizer
    ```
 
@@ -137,10 +137,6 @@ AIProductCategorizer/
 - **Virtual Environment**: May need `python3 -m venv venv`
 - **Permissions**: Use `sudo` if permission errors occur
 
-### 🐧 Linux Specific Notes
-- **Python**: Install with `sudo apt install python3 python3-pip python3-venv`
-- **Node.js**: Install with `sudo apt install nodejs npm`
-- **Dependencies**: May need `sudo apt install python3-dev`
 
 ### 🔧 Troubleshooting
 - **Port conflicts**: Change ports in app.py (backend) or package.json (frontend)
@@ -259,9 +255,6 @@ This project demonstrates:
 
 This project demonstrates modern development practices and serves as a learning resource for full-stack development with AI integration.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
@@ -280,9 +273,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [📁 Frontend Source](frontend/) - React application code
 - [📁 Backend Source](backend/) - Flask API and AI integration
 
-## 🙏 Acknowledgments
-
-- **OpenAI** for CLIP model
-- **Google** for Gemini Vision API
-- **Chakra UI** for beautiful components
-- **React** community for ecosystem 
