@@ -4,10 +4,6 @@
 
 **AI Product Categorizer** is a modern e-commerce platform that leverages artificial intelligence for automatic product categorization using CLIP (Contrastive Language-Image Pre-Training) technology. This graduation project demonstrates the integration of AI capabilities with a full-stack web application, showcasing modern development practices and industry-standard technologies.
 
-[![Made with React](https://img.shields.io/badge/Made%20with-React-61dafb?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![Python Flask](https://img.shields.io/badge/Backend-Flask-000000?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
-[![AI Powered](https://img.shields.io/badge/AI%20Powered-CLIP-ff6b6b?style=for-the-badge&logo=openai)](https://openai.com/clip/)
-[![Chakra UI](https://img.shields.io/badge/UI-Chakra%20UI-319795?style=for-the-badge&logo=chakraui)](https://chakra-ui.com/)
 
 ## ✨ Key Features
 
